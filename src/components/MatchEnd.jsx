@@ -1,5 +1,5 @@
 import { useMatch } from '../context/MatchContext';
-import { saveMatch } from '../utils/storage';
+import { submitMatch } from '../utils/api';
 
 export default function MatchEnd() {
     const { state, actions } = useMatch();
@@ -23,16 +23,21 @@ export default function MatchEnd() {
         resultClass = 'draw';
     }
 
-    const handleSave = () => {
-        saveMatch({
-            playerA,
-            playerB,
-            scoreA,
-            scoreB,
-            matchType,
-            goalEvents: currentMatch.goalEvents,
-        });
-        actions.resetMatch();
+    const handleSave = async () => {
+        try {
+            await submitMatch({
+                playerA,
+                playerB,
+                scoreA,
+                scoreB,
+                matchType,
+                goalEvents: currentMatch.goalEvents,
+            });
+            actions.resetMatch();
+        } catch (error) {
+            console.error('Failed to save match:', error);
+            alert('Failed to save match. Please try again.');
+        }
     };
 
     const handleDiscard = () => {

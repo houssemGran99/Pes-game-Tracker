@@ -1,7 +1,7 @@
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
+import { fetchPlayers, createPlayer } from '../utils/api';
 
 // Initial state
-const savedPlayers = localStorage.getItem('pes6_players');
 const initialState = {
     // Current screen
     screen: 'home', // home, newMatch, liveMatch, matchEnd, history, stats
@@ -11,7 +11,7 @@ const initialState = {
     currentMatch: null,
 
     // Players list
-    players: savedPlayers ? JSON.parse(savedPlayers) : [],
+    players: [],
 };
 
 // Action types
@@ -23,6 +23,7 @@ const ACTIONS = {
     END_MATCH: 'END_MATCH',
     RESET_MATCH: 'RESET_MATCH',
     ADD_PLAYER: 'ADD_PLAYER',
+    INIT_PLAYERS: 'INIT_PLAYERS',
 };
 
 // Reducer
@@ -34,16 +35,15 @@ function matchReducer(state, action) {
             }
             return { ...state, screen: action.payload, screenParams: null };
 
+        case ACTIONS.INIT_PLAYERS:
+            return { ...state, players: action.payload };
+
         case ACTIONS.ADD_PLAYER: {
             const newPlayer = action.payload;
             if (state.players.includes(newPlayer)) return state;
-
-            const updatedPlayers = [...state.players, newPlayer];
-            localStorage.setItem('pes6_players', JSON.stringify(updatedPlayers));
-
             return {
                 ...state,
-                players: updatedPlayers
+                players: [...state.players, newPlayer]
             };
         }
 
@@ -114,6 +114,17 @@ const MatchContext = createContext(null);
 export function MatchProvider({ children }) {
     const [state, dispatch] = useReducer(matchReducer, initialState);
 
+    // Initial Fetch
+    useEffect(() => {
+        const loadPlayers = async () => {
+            const players = await fetchPlayers();
+            // Assuming API returns array of objects with name
+            const names = players.map(p => p.name);
+            dispatch({ type: ACTIONS.INIT_PLAYERS, payload: names });
+        };
+        loadPlayers();
+    }, []);
+
     const actions = {
         setScreen: (screen, params = null) => {
             if (params) {
@@ -127,7 +138,16 @@ export function MatchProvider({ children }) {
         undoGoal: () => dispatch({ type: ACTIONS.UNDO_GOAL }),
         endMatch: () => dispatch({ type: ACTIONS.END_MATCH }),
         resetMatch: () => dispatch({ type: ACTIONS.RESET_MATCH }),
-        addPlayer: (name) => dispatch({ type: ACTIONS.ADD_PLAYER, payload: name }),
+
+        addPlayer: async (name) => {
+            try {
+                const newPlayer = await createPlayer(name);
+                dispatch({ type: ACTIONS.ADD_PLAYER, payload: newPlayer.name });
+            } catch (err) {
+                console.error("Failed to add player", err);
+                alert("Failed to add player: " + err.message);
+            }
+        },
     };
 
     return (

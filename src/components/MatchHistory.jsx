@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
-import { getMatches } from '../utils/storage';
+import { fetchMatches } from '../utils/api';
 
 export default function MatchHistory() {
     const { actions } = useMatch();
     const [matches, setMatches] = useState([]);
 
     useEffect(() => {
-        setMatches(getMatches());
+        fetchMatches().then(setMatches);
     }, []);
 
     const formatDate = (dateString) => {

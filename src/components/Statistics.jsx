@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
-import { getOverallStats, getLeaderboard, getMatches } from '../utils/storage';
+import { fetchMatches } from '../utils/api';
+import { calculateOverallStats, calculateLeaderboard } from '../utils/stats';
 import PlayerSelect from './PlayerSelect';
 
 export default function Statistics() {
     const { actions, state } = useMatch();
     const { players } = state;
+    const [matches, setMatches] = useState([]);
     const [overall, setOverall] = useState({ totalMatches: 0, totalGoals: 0, avgGoalsPerMatch: 0 });
     const [leaderboard, setLeaderboard] = useState([]);
 
@@ -18,17 +20,22 @@ export default function Statistics() {
     const [h2hB, setH2hB] = useState('');
 
     useEffect(() => {
-        const currentLeaderboard = getLeaderboard();
-        setOverall(getOverallStats());
-        setLeaderboard(currentLeaderboard);
+        const loadData = async () => {
+            const data = await fetchMatches();
+            setMatches(data);
+            setOverall(calculateOverallStats(data));
+            const lb = calculateLeaderboard(data);
+            setLeaderboard(lb);
 
-        // Handle navigation params
-        if (state.screenParams && state.screenParams.selectedPlayer) {
-            const player = currentLeaderboard.find(p => p.name === state.screenParams.selectedPlayer);
-            if (player) {
-                setSelectedPlayer(player);
+            // Handle navigation params
+            if (state.screenParams && state.screenParams.selectedPlayer) {
+                const player = lb.find(p => p.name === state.screenParams.selectedPlayer);
+                if (player) {
+                    setSelectedPlayer(player);
+                }
             }
-        }
+        };
+        loadData();
     }, [state.screenParams]);
 
     const getRankClass = (index) => {
@@ -53,14 +60,14 @@ export default function Statistics() {
 
     const getPlayerMatches = () => {
         if (!selectedPlayer) return [];
-        return getMatches().filter(m =>
+        return matches.filter(m =>
             m.playerA === selectedPlayer.name || m.playerB === selectedPlayer.name
         );
     };
 
     const getH2HMatches = () => {
         if (!h2hA || !h2hB) return [];
-        return getMatches().filter(m =>
+        return matches.filter(m =>
             (m.playerA === h2hA && m.playerB === h2hB) ||
             (m.playerA === h2hB && m.playerB === h2hA)
         );
