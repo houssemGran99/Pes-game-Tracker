@@ -1,0 +1,137 @@
+import { createContext, useContext, useReducer } from 'react';
+
+// Initial state
+const savedPlayers = localStorage.getItem('pes6_players');
+const initialState = {
+    // Current screen
+    screen: 'home', // home, newMatch, liveMatch, matchEnd, history, stats
+
+    // Match data
+    currentMatch: null,
+
+    // Players list
+    players: savedPlayers ? JSON.parse(savedPlayers) : [],
+};
+
+// Action types
+const ACTIONS = {
+    SET_SCREEN: 'SET_SCREEN',
+    START_MATCH: 'START_MATCH',
+    ADD_GOAL: 'ADD_GOAL',
+    UNDO_GOAL: 'UNDO_GOAL',
+    END_MATCH: 'END_MATCH',
+    RESET_MATCH: 'RESET_MATCH',
+    ADD_PLAYER: 'ADD_PLAYER',
+};
+
+// Reducer
+function matchReducer(state, action) {
+    switch (action.type) {
+        case ACTIONS.SET_SCREEN:
+            return { ...state, screen: action.payload };
+
+        case ACTIONS.ADD_PLAYER: {
+            const newPlayer = action.payload;
+            if (state.players.includes(newPlayer)) return state;
+
+            const updatedPlayers = [...state.players, newPlayer];
+            localStorage.setItem('pes6_players', JSON.stringify(updatedPlayers));
+
+            return {
+                ...state,
+                players: updatedPlayers
+            };
+        }
+
+        case ACTIONS.START_MATCH:
+            return {
+                ...state,
+                screen: 'liveMatch',
+                currentMatch: {
+                    playerA: action.payload.playerA,
+                    playerB: action.payload.playerB,
+                    scoreA: 0,
+                    scoreB: 0,
+                    goalEvents: [],
+                },
+            };
+
+        case ACTIONS.ADD_GOAL: {
+            const player = action.payload; // 'A' or 'B'
+            const scoreKey = player === 'A' ? 'scoreA' : 'scoreB';
+            return {
+                ...state,
+                currentMatch: {
+                    ...state.currentMatch,
+                    [scoreKey]: state.currentMatch[scoreKey] + 1,
+                    goalEvents: [
+                        ...state.currentMatch.goalEvents,
+                        { player },
+                    ],
+                },
+            };
+        }
+
+        case ACTIONS.UNDO_GOAL: {
+            if (state.currentMatch.goalEvents.length === 0) return state;
+
+            const lastEvent = state.currentMatch.goalEvents[state.currentMatch.goalEvents.length - 1];
+            const scoreKey = lastEvent.player === 'A' ? 'scoreA' : 'scoreB';
+
+            return {
+                ...state,
+                currentMatch: {
+                    ...state.currentMatch,
+                    [scoreKey]: Math.max(0, state.currentMatch[scoreKey] - 1),
+                    goalEvents: state.currentMatch.goalEvents.slice(0, -1),
+                },
+            };
+        }
+
+        case ACTIONS.END_MATCH:
+            return { ...state, screen: 'matchEnd' };
+
+        case ACTIONS.RESET_MATCH:
+            return {
+                ...state,
+                screen: 'home',
+                currentMatch: null,
+            };
+
+        default:
+            return state;
+    }
+}
+
+// Context
+const MatchContext = createContext(null);
+
+// Provider component
+export function MatchProvider({ children }) {
+    const [state, dispatch] = useReducer(matchReducer, initialState);
+
+    const actions = {
+        setScreen: (screen) => dispatch({ type: ACTIONS.SET_SCREEN, payload: screen }),
+        startMatch: (matchData) => dispatch({ type: ACTIONS.START_MATCH, payload: matchData }),
+        addGoal: (player) => dispatch({ type: ACTIONS.ADD_GOAL, payload: player }),
+        undoGoal: () => dispatch({ type: ACTIONS.UNDO_GOAL }),
+        endMatch: () => dispatch({ type: ACTIONS.END_MATCH }),
+        resetMatch: () => dispatch({ type: ACTIONS.RESET_MATCH }),
+        addPlayer: (name) => dispatch({ type: ACTIONS.ADD_PLAYER, payload: name }),
+    };
+
+    return (
+        <MatchContext.Provider value={{ state, actions }}>
+            {children}
+        </MatchContext.Provider>
+    );
+}
+
+// Custom hook
+export function useMatch() {
+    const context = useContext(MatchContext);
+    if (!context) {
+        throw new Error('useMatch must be used within a MatchProvider');
+    }
+    return context;
+}
