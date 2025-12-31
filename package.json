@@ -1,25 +1,7 @@
 {
-  "name": "pes6-tracker",
+  "name": "pes6-tracker-root",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "server": "node server/index.js"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "mongoose": "^9.1.1",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react-swc": "^3.7.2",
-    "vite": "^5.4.11"
+    "install-app": "cd client && npm install && cd ../server && npm install"
   }
 }
