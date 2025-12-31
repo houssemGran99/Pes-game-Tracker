@@ -18,9 +18,18 @@ export default function Statistics() {
     const [h2hB, setH2hB] = useState('');
 
     useEffect(() => {
+        const currentLeaderboard = getLeaderboard();
         setOverall(getOverallStats());
-        setLeaderboard(getLeaderboard());
-    }, []);
+        setLeaderboard(currentLeaderboard);
+
+        // Handle navigation params
+        if (state.screenParams && state.screenParams.selectedPlayer) {
+            const player = currentLeaderboard.find(p => p.name === state.screenParams.selectedPlayer);
+            if (player) {
+                setSelectedPlayer(player);
+            }
+        }
+    }, [state.screenParams]);
 
     const getRankClass = (index) => {
         if (index === 0) return 'gold';
@@ -85,6 +94,14 @@ export default function Statistics() {
 
     // --- Render Views ---
 
+    const handleReviewPlayer = (playerName) => {
+        const player = leaderboard.find(p => p.name === playerName);
+        if (player) {
+            setSelectedPlayer(player);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     const renderPlayerDetail = () => {
         const playerMatches = getPlayerMatches();
         return (
@@ -140,12 +157,24 @@ export default function Statistics() {
                                     </div>
                                     <div className="match-card-score">
                                         <div className="match-card-player">
-                                            <div className="match-card-player-name">{match.playerA}</div>
+                                            <div
+                                                className="match-card-player-name"
+                                                onClick={() => handleReviewPlayer(match.playerA)}
+                                                style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                            >
+                                                {match.playerA}
+                                            </div>
                                             <div className="match-card-player-score">{match.scoreA}</div>
                                         </div>
                                         <div className="match-card-vs">vs</div>
                                         <div className="match-card-player">
-                                            <div className="match-card-player-name">{match.playerB}</div>
+                                            <div
+                                                className="match-card-player-name"
+                                                onClick={() => handleReviewPlayer(match.playerB)}
+                                                style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                            >
+                                                {match.playerB}
+                                            </div>
                                             <div className="match-card-player-score">{match.scoreB}</div>
                                         </div>
                                     </div>
@@ -230,13 +259,25 @@ export default function Statistics() {
                                             <span className="match-date">{formatDate(match.date)}</span>
                                         </div>
                                         <div className="match-card-score">
-                                            <div className={`match - card - player ${match.scoreA > match.scoreB ? 'winner' : ''} `}>
-                                                <div className="match-card-player-name">{match.playerA}</div>
+                                            <div className={`match-card-player ${match.scoreA > match.scoreB ? 'winner' : ''}`}>
+                                                <div
+                                                    className="match-card-player-name"
+                                                    onClick={() => handleReviewPlayer(match.playerA)}
+                                                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                                >
+                                                    {match.playerA}
+                                                </div>
                                                 <div className="match-card-player-score">{match.scoreA}</div>
                                             </div>
                                             <div className="match-card-vs">vs</div>
-                                            <div className={`match - card - player ${match.scoreB > match.scoreA ? 'winner' : ''} `}>
-                                                <div className="match-card-player-name">{match.playerB}</div>
+                                            <div className={`match-card-player ${match.scoreB > match.scoreA ? 'winner' : ''}`}>
+                                                <div
+                                                    className="match-card-player-name"
+                                                    onClick={() => handleReviewPlayer(match.playerB)}
+                                                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                                >
+                                                    {match.playerB}
+                                                </div>
                                                 <div className="match-card-player-score">{match.scoreB}</div>
                                             </div>
                                         </div>

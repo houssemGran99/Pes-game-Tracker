@@ -5,6 +5,7 @@ const savedPlayers = localStorage.getItem('pes6_players');
 const initialState = {
     // Current screen
     screen: 'home', // home, newMatch, liveMatch, matchEnd, history, stats
+    screenParams: null,
 
     // Match data
     currentMatch: null,
@@ -28,7 +29,10 @@ const ACTIONS = {
 function matchReducer(state, action) {
     switch (action.type) {
         case ACTIONS.SET_SCREEN:
-            return { ...state, screen: action.payload };
+            if (typeof action.payload === 'object' && action.payload.name) {
+                return { ...state, screen: action.payload.name, screenParams: action.payload.params };
+            }
+            return { ...state, screen: action.payload, screenParams: null };
 
         case ACTIONS.ADD_PLAYER: {
             const newPlayer = action.payload;
@@ -111,7 +115,13 @@ export function MatchProvider({ children }) {
     const [state, dispatch] = useReducer(matchReducer, initialState);
 
     const actions = {
-        setScreen: (screen) => dispatch({ type: ACTIONS.SET_SCREEN, payload: screen }),
+        setScreen: (screen, params = null) => {
+            if (params) {
+                dispatch({ type: ACTIONS.SET_SCREEN, payload: { name: screen, params } });
+            } else {
+                dispatch({ type: ACTIONS.SET_SCREEN, payload: screen });
+            }
+        },
         startMatch: (matchData) => dispatch({ type: ACTIONS.START_MATCH, payload: matchData }),
         addGoal: (player) => dispatch({ type: ACTIONS.ADD_GOAL, payload: player }),
         undoGoal: () => dispatch({ type: ACTIONS.UNDO_GOAL }),

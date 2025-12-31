@@ -27,6 +27,10 @@ export default function MatchHistory() {
         return 'draw';
     };
 
+    const handlePlayerClick = (playerName) => {
+        actions.setScreen('stats', { selectedPlayer: playerName });
+    };
+
     return (
         <div className="history-screen container animate-fade-in">
             <button className="back-btn" onClick={() => actions.setScreen('home')}>
@@ -52,12 +56,24 @@ export default function MatchHistory() {
                                 </div>
                                 <div className="match-card-score">
                                     <div className={`match-card-player ${winner === 'A' ? 'winner' : ''}`}>
-                                        <div className="match-card-player-name">{match.playerA}</div>
+                                        <div
+                                            className="match-card-player-name"
+                                            onClick={() => handlePlayerClick(match.playerA)}
+                                            style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                        >
+                                            {match.playerA}
+                                        </div>
                                         <div className="match-card-player-score">{match.scoreA}</div>
                                     </div>
                                     <div className="match-card-vs">vs</div>
                                     <div className={`match-card-player ${winner === 'B' ? 'winner' : ''}`}>
-                                        <div className="match-card-player-name">{match.playerB}</div>
+                                        <div
+                                            className="match-card-player-name"
+                                            onClick={() => handlePlayerClick(match.playerB)}
+                                            style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                        >
+                                            {match.playerB}
+                                        </div>
                                         <div className="match-card-player-score">{match.scoreB}</div>
                                     </div>
                                 </div>
