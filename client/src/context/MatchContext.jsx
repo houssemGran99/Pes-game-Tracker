@@ -1,3 +1,4 @@
+'use client';
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { fetchPlayers, createPlayer } from '../utils/api';
 

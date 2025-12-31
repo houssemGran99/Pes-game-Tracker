@@ -148,7 +148,7 @@ export default function Statistics() {
                             const isDraw = match.scoreA === match.scoreB;
 
                             return (
-                                <div key={match.id} className="match-card card" style={{
+                                <div key={match._id || match.id || index} className="match-card card" style={{
                                     borderLeft: `4px solid ${isWin ? 'var(--color-success)' : isDraw ? 'var(--color-warning)' : 'var(--color-danger)'} `
                                 }}>
                                     <div className="match-card-header">
@@ -260,8 +260,8 @@ export default function Statistics() {
                         <h3 className="section-title">Head to Head History</h3>
                         <div className="match-list">
                             {matches.length > 0 ? (
-                                matches.map(match => (
-                                    <div key={match.id} className="match-card card">
+                                matches.map((match, index) => (
+                                    <div key={match._id || match.id || index} className="match-card card">
                                         <div className="match-card-header">
                                             <span className="match-date">{formatDate(match.date)}</span>
                                         </div>

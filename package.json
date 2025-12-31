@@ -2,6 +2,8 @@
   "name": "pes6-tracker-root",
   "private": true,
   "scripts": {
-    "install-app": "cd client && npm install && cd ../server && npm install"
+    "dev:client": "pnpm --filter client dev",
+    "dev:server": "pnpm --filter server dev",
+    "build": "pnpm -r build"
   }
 }

@@ -1,5 +1,6 @@
-import './App.css';
-import { MatchProvider, useMatch } from './context/MatchContext';
+'use client';
+
+import { useMatch } from './context/MatchContext';
 import HomeScreen from './components/HomeScreen';
 import NewMatch from './components/NewMatch';
 import LiveMatch from './components/LiveMatch';
@@ -7,7 +8,7 @@ import MatchEnd from './components/MatchEnd';
 import MatchHistory from './components/MatchHistory';
 import Statistics from './components/Statistics';
 
-function AppContent() {
+function MainApp() {
   const { state } = useMatch();
 
   const renderScreen = () => {
@@ -38,12 +39,4 @@ function AppContent() {
   );
 }
 
-function App() {
-  return (
-    <MatchProvider>
-      <AppContent />
-    </MatchProvider>
-  );
-}
-
-export default App;
+export default MainApp;

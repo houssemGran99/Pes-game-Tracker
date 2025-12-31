@@ -47,10 +47,11 @@ export default function MatchHistory() {
                 </div>
             ) : (
                 <div className="match-list">
-                    {matches.map((match) => {
+                    {matches.map((match, index) => {
+                        console.log('Match item:', match);
                         const winner = getWinner(match);
                         return (
-                            <div key={match.id} className="match-card card">
+                            <div key={match._id || match.id || index} className="match-card card">
                                 <div className="match-card-header">
                                     <span className="match-date">{formatDate(match.date)}</span>
                                 </div>
