@@ -14,11 +14,6 @@ app.use(cors());
 app.use(express.json());
 
 // Database Connection
-// Database Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Connection Error:', err));
-
 app.get('/', (req, res) => {
     res.send('PES 6 Tracker API Running');
 });
@@ -26,6 +21,12 @@ app.get('/', (req, res) => {
 // Import Routes
 app.use('/api', routes);
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Database Connection
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log('MongoDB Connected');
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    })
+    .catch(err => console.error('MongoDB Connection Error:', err));
