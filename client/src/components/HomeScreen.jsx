@@ -1,7 +1,9 @@
 import { useMatch } from '../context/MatchContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen() {
     const { actions } = useMatch();
+    const { isAdmin, logout, user } = useAuth();
 
     return (
         <div className="home-screen animate-fade-in">
@@ -10,14 +12,16 @@ export default function HomeScreen() {
             <p className="subtitle">Track your matches & stats</p>
 
             <nav className="home-nav">
-                <button className="nav-btn" onClick={() => actions.setScreen('newMatch')}>
-                    <span className="nav-btn-icon">🎮</span>
-                    <div className="nav-btn-text">
-                        <div className="nav-btn-title">Start New Match</div>
-                        <div className="nav-btn-desc">Begin tracking a new game</div>
-                    </div>
-                    <span>→</span>
-                </button>
+                {isAdmin && (
+                    <button className="nav-btn" onClick={() => actions.setScreen('newMatch')}>
+                        <span className="nav-btn-icon">🎮</span>
+                        <div className="nav-btn-text">
+                            <div className="nav-btn-title">Start New Match</div>
+                            <div className="nav-btn-desc">Begin tracking a new game</div>
+                        </div>
+                        <span>→</span>
+                    </button>
+                )}
 
                 <button className="nav-btn" onClick={() => actions.setScreen('history')}>
                     <span className="nav-btn-icon">📜</span>
@@ -35,6 +39,14 @@ export default function HomeScreen() {
                         <div className="nav-btn-desc">Player rankings & records</div>
                     </div>
                     <span>→</span>
+                </button>
+
+                <button className="nav-btn" onClick={logout} style={{ marginTop: '2rem', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0' }}>
+                    <span className="nav-btn-icon">🚪</span>
+                    <div className="nav-btn-text">
+                        <div className="nav-btn-title" style={{ color: '#64748b' }}>Logout</div>
+                        <div className="nav-btn-desc">{user?.username}</div>
+                    </div>
                 </button>
             </nav>
         </div>

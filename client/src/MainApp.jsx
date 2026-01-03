@@ -1,7 +1,9 @@
 'use client';
 
 import { useMatch } from './context/MatchContext';
+import { useAuth } from './context/AuthContext';
 import HomeScreen from './components/HomeScreen';
+import LoginScreen from './components/LoginScreen';
 import NewMatch from './components/NewMatch';
 import LiveMatch from './components/LiveMatch';
 import MatchEnd from './components/MatchEnd';
@@ -10,6 +12,19 @@ import Statistics from './components/Statistics';
 
 function MainApp() {
   const { state } = useMatch();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginScreen />;
+  }
 
   const renderScreen = () => {
     switch (state.screen) {
