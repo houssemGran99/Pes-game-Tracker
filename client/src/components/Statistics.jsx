@@ -329,34 +329,72 @@ export default function Statistics() {
             </div>
 
             <div className="leaderboard">
-                <h3 className="section-title">Leaderboard</h3>
+                <h3 className="section-title">League Table</h3>
 
                 {leaderboard.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-state-icon">🏆</div>
-                        <p>No player stats yet</p>
-                        <p className="text-muted">Play some matches to see rankings</p>
+                        <p>No matches played yet</p>
+                        <p className="text-muted">Play some matches to see the league table!</p>
                     </div>
                 ) : (
-                    leaderboard.map((player, index) => (
-                        <div
-                            key={player.name}
-                            className="leaderboard-item"
-                            onClick={() => setSelectedPlayer(player)}
-                            style={{ cursor: 'pointer', transition: 'transform 0.2s', ':hover': { transform: 'translateX(5px)' } }}
-                        >
-                            <div className={`leaderboard - rank ${getRankClass(index)} `}>
-                                {index + 1}
-                            </div>
-                            <div className="leaderboard-player">{player.name}</div>
-                            <div className="leaderboard-stats">
-                                <div className="leaderboard-wins">{player.wins} W</div>
-                                <div className="leaderboard-record">
-                                    {player.wins}-{player.draws}-{player.losses} • {player.goalsFor} GF
-                                </div>
-                            </div>
-                        </div>
-                    ))
+                    <div className="table-container card" style={{ padding: 0 }}>
+                        <table className="league-table">
+                            <thead>
+                                <tr>
+                                    <th className="text-left">#</th>
+                                    <th className="text-left">Team</th>
+                                    <th title="Matches Played">MP</th>
+                                    <th title="Wins">W</th>
+                                    <th title="Draws">D</th>
+                                    <th title="Losses">L</th>
+                                    <th title="Goals For">GF</th>
+                                    <th title="Goals Against">GA</th>
+                                    <th title="Goal Difference">GD</th>
+                                    <th>Pts</th>
+                                    <th>Last 5</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {leaderboard.map((player, index) => (
+                                    <tr
+                                        key={player.name}
+                                        onClick={() => setSelectedPlayer(player)}
+                                    >
+                                        <td className="text-left">
+                                            <span className={`leaderboard-rank ${getRankClass(index)}`}>
+                                                {index + 1}
+                                            </span>
+                                        </td>
+                                        <td className="team-cell">
+                                            {player.name}
+                                        </td>
+                                        <td>{player.matches}</td>
+                                        <td style={{ color: 'var(--color-success)' }}>{player.wins}</td>
+                                        <td style={{ color: 'var(--color-warning)' }}>{player.draws}</td>
+                                        <td style={{ color: 'var(--color-danger)' }}>{player.losses}</td>
+                                        <td>{player.goalsFor}</td>
+                                        <td>{player.goalsAgainst}</td>
+                                        <td>
+                                            <span style={{ color: player.goalDifference > 0 ? 'var(--color-success)' : player.goalDifference < 0 ? 'var(--color-danger)' : 'inherit' }}>
+                                                {player.goalDifference > 0 ? '+' : ''}{player.goalDifference}
+                                            </span>
+                                        </td>
+                                        <td className="points-cell">{player.points}</td>
+                                        <td>
+                                            <div className="form-badges">
+                                                {player.form && player.form.map((result, i) => (
+                                                    <div key={i} className={`form-badge ${result === 'W' ? 'win' : result === 'D' ? 'draw' : 'loss'}`}>
+                                                        {result}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
         </>
@@ -374,14 +412,14 @@ export default function Statistics() {
             {!selectedPlayer && (
                 <div className="tabs" style={{ display: 'flex', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                     <button
-                        className={`btn btn - ghost ${activeTab === 'leaderboard' ? 'active' : ''} `}
+                        className={`btn btn-ghost ${activeTab === 'leaderboard' ? 'active' : ''}`}
                         onClick={() => setActiveTab('leaderboard')}
                         style={{ borderBottom: activeTab === 'leaderboard' ? '2px solid var(--color-primary)' : 'none', borderRadius: 0 }}
                     >
                         🏆 Leaderboard
                     </button>
                     <button
-                        className={`btn btn - ghost ${activeTab === 'h2h' ? 'active' : ''} `}
+                        className={`btn btn-ghost ${activeTab === 'h2h' ? 'active' : ''}`}
                         onClick={() => setActiveTab('h2h')}
                         style={{ borderBottom: activeTab === 'h2h' ? '2px solid var(--color-primary)' : 'none', borderRadius: 0 }}
                     >

@@ -867,7 +867,147 @@ body {
   color: var(--color-text-muted);
 }
 
+/* League Table */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-lg) !important;
+}
+
+.league-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.league-table th {
+  padding: var(--space-md);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.league-table th.text-left {
+  text-align: left;
+}
+
+.league-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+}
+
+.league-table tbody tr {
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.league-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.league-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.team-cell {
+  font-weight: 600;
+  text-align: left;
+  min-width: 120px;
+}
+
+.points-cell {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--color-primary) !important;
+}
+
+.form-badges {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.form-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  /* Square with slight roundness like official tables */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.form-badge.win {
+  background-color: var(--color-success);
+}
+
+.form-badge.draw {
+  background-color: var(--color-text-muted);
+  /* Grey for draw */
+}
+
+.form-badge.loss {
+  background-color: var(--color-danger);
+}
+
 /* Mobile Responsiveness */
+@media (max-width: 600px) {
+
+  /* Hide less important columns on mobile */
+  .league-table th:nth-child(4),
+  /* Wins */
+  .league-table td:nth-child(4),
+  .league-table th:nth-child(5),
+  /* Draws */
+  .league-table td:nth-child(5),
+  .league-table th:nth-child(6),
+  /* Losses */
+  .league-table td:nth-child(6),
+  .league-table th:nth-child(7),
+  /* Goals For */
+  .league-table td:nth-child(7),
+  .league-table th:nth-child(8),
+  /* Goals Against */
+  .league-table td:nth-child(8),
+  .league-table th:nth-child(11),
+  /* Form */
+  .league-table td:nth-child(11) {
+    display: none;
+  }
+
+  .league-table th,
+  .league-table td {
+    padding: var(--space-sm);
+    font-size: var(--font-size-sm);
+  }
+
+  .team-cell {
+    min-width: auto;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .stats-grid .stat-card {
+    padding: var(--space-md);
+  }
+
+  .stat-value {
+    font-size: var(--font-size-2xl);
+  }
+}
+
 @media (max-width: 380px) {
   :root {
     --font-size-score: 4rem;
