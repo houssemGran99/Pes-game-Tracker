@@ -94,3 +94,25 @@ export const calculateLeaderboard = (matches) => {
             return b.goalsFor - a.goalsFor;
         });
 };
+
+export const calculateRecords = (matches) => {
+    let biggestWin = null;
+    let highestScoringMatch = null;
+
+    matches.forEach(match => {
+        const diff = Math.abs(match.scoreA - match.scoreB);
+        const total = match.scoreA + match.scoreB;
+
+        // Biggest Win
+        if (!biggestWin || diff > Math.abs(biggestWin.scoreA - biggestWin.scoreB)) {
+            biggestWin = match;
+        }
+
+        // Highest Scoring
+        if (!highestScoringMatch || total > (highestScoringMatch.scoreA + highestScoringMatch.scoreB)) {
+            highestScoringMatch = match;
+        }
+    });
+
+    return { biggestWin, highestScoringMatch };
+};

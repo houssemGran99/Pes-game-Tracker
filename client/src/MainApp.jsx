@@ -9,6 +9,7 @@ import LiveMatch from './components/LiveMatch';
 import MatchEnd from './components/MatchEnd';
 import MatchHistory from './components/MatchHistory';
 import Statistics from './components/Statistics';
+import LeagueTable from './components/LeagueTable';
 
 function MainApp() {
   const { state } = useMatch();
@@ -38,6 +39,8 @@ function MainApp() {
         return <MatchEnd />;
       case 'history':
         return <MatchHistory />;
+      case 'leagueTable':
+        return <LeagueTable />;
       case 'stats':
         return <Statistics />;
       default:

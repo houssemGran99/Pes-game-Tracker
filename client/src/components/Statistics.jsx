@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
 import { fetchMatches } from '../utils/api';
-import { calculateOverallStats, calculateLeaderboard } from '../utils/stats';
+import { calculateOverallStats, calculateLeaderboard, calculateRecords } from '../utils/stats';
 import PlayerSelect from './PlayerSelect';
 
 export default function Statistics() {
@@ -10,14 +10,12 @@ export default function Statistics() {
     const [matches, setMatches] = useState([]);
     const [overall, setOverall] = useState({ totalMatches: 0, totalGoals: 0, avgGoalsPerMatch: 0 });
     const [leaderboard, setLeaderboard] = useState([]);
-
-    // View State
-    const [activeTab, setActiveTab] = useState('leaderboard'); // 'leaderboard' | 'h2h'
-    const [selectedPlayer, setSelectedPlayer] = useState(null); // For Player Detail view
+    const [records, setRecords] = useState({ biggestWin: null, highestScoringMatch: null });
 
     // H2H State
     const [h2hA, setH2hA] = useState('');
     const [h2hB, setH2hB] = useState('');
+    const [selectedPlayer, setSelectedPlayer] = useState(null); // For detailed view lookup
 
     useEffect(() => {
         const loadData = async () => {
@@ -25,25 +23,11 @@ export default function Statistics() {
             setMatches(data);
             setOverall(calculateOverallStats(data));
             const lb = calculateLeaderboard(data);
-            setLeaderboard(lb);
-
-            // Handle navigation params
-            if (state.screenParams && state.screenParams.selectedPlayer) {
-                const player = lb.find(p => p.name === state.screenParams.selectedPlayer);
-                if (player) {
-                    setSelectedPlayer(player);
-                }
-            }
+            setLeaderboard(lb); // Still needed for player lookup details
+            setRecords(calculateRecords(data));
         };
         loadData();
-    }, [state.screenParams]);
-
-    const getRankClass = (index) => {
-        if (index === 0) return 'gold';
-        if (index === 1) return 'silver';
-        if (index === 2) return 'bronze';
-        return '';
-    };
+    }, []);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -54,15 +38,6 @@ export default function Statistics() {
             hour: '2-digit',
             minute: '2-digit',
         });
-    };
-
-    // --- Helpers ---
-
-    const getPlayerMatches = () => {
-        if (!selectedPlayer) return [];
-        return matches.filter(m =>
-            m.playerA === selectedPlayer.name || m.playerB === selectedPlayer.name
-        );
     };
 
     const getH2HMatches = () => {
@@ -99,102 +74,25 @@ export default function Statistics() {
         return stats;
     };
 
-    // --- Render Views ---
-
     const handleReviewPlayer = (playerName) => {
-        const player = leaderboard.find(p => p.name === playerName);
-        if (player) {
-            setSelectedPlayer(player);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        // Optionally navigate to League Table or show modal? 
+        // For now, let's just keep the simple H2H focus.
+        // If we want detailed stats, we go to League Table.
     };
 
-    const renderPlayerDetail = () => {
-        const playerMatches = getPlayerMatches();
-        return (
-            <div className="animate-fade-in">
-                <button className="back-btn" onClick={() => setSelectedPlayer(null)}>
-                    ← Back to Leaderboard
-                </button>
-
-                <h2 className="section-title">{selectedPlayer.name}</h2>
-                <div className="subtitle">Player Statistics</div>
-
-                <div className="stats-grid">
-                    <div className="stat-card card">
-                        <div className="stat-value">{selectedPlayer.matches}</div>
-                        <div className="stat-label">Matches</div>
-                    </div>
-                    <div className="stat-card card">
-                        <div className="stat-value">{selectedPlayer.wins}</div>
-                        <div className="stat-label">Wins</div>
-                    </div>
-                    <div className="stat-card card">
-                        <div className="stat-value">{selectedPlayer.goalsFor}</div>
-                        <div className="stat-label">Goals</div>
-                    </div>
-                    <div className="stat-card card">
-                        <div className="stat-value">{selectedPlayer.winRate}%</div>
-                        <div className="stat-label">Win Rate</div>
-                    </div>
-                </div>
-
-                <h3 className="section-title">Match History</h3>
-                <div className="match-list">
-                    {playerMatches.length > 0 ? (
-                        playerMatches.map((match) => {
-                            const isWin = (match.playerA === selectedPlayer.name && match.scoreA > match.scoreB) ||
-                                (match.playerB === selectedPlayer.name && match.scoreB > match.scoreA);
-                            const isDraw = match.scoreA === match.scoreB;
-
-                            return (
-                                <div key={match._id || match.id || index} className="match-card card" style={{
-                                    borderLeft: `4px solid ${isWin ? 'var(--color-success)' : isDraw ? 'var(--color-warning)' : 'var(--color-danger)'} `
-                                }}>
-                                    <div className="match-card-header">
-                                        <span className="match-date">{formatDate(match.date)}</span>
-                                        <span style={{
-                                            color: isWin ? 'var(--color-success)' : isDraw ? 'var(--color-warning)' : 'var(--color-danger)',
-                                            fontWeight: 'bold',
-                                            textTransform: 'uppercase',
-                                            fontSize: '0.8rem'
-                                        }}>
-                                            {isWin ? 'Win' : isDraw ? 'Draw' : 'Loss'}
-                                        </span>
-                                    </div>
-                                    <div className="match-card-score">
-                                        <div className="match-card-player">
-                                            <div
-                                                className="match-card-player-name"
-                                                onClick={() => handleReviewPlayer(match.playerA)}
-                                                style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                                            >
-                                                {match.playerA}
-                                            </div>
-                                            <div className="match-card-player-score">{match.scoreA}</div>
-                                        </div>
-                                        <div className="match-card-vs">vs</div>
-                                        <div className="match-card-player">
-                                            <div
-                                                className="match-card-player-name"
-                                                onClick={() => handleReviewPlayer(match.playerB)}
-                                                style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                                            >
-                                                {match.playerB}
-                                            </div>
-                                            <div className="match-card-player-score">{match.scoreB}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <p className="text-center text-muted">No matches found</p>
-                    )}
-                </div>
-            </div>
-        );
+    // Derived Stats for Records View
+    const getTopScorer = () => {
+        if (leaderboard.length === 0) return null;
+        return [...leaderboard].sort((a, b) => b.goalsFor - a.goalsFor)[0];
     };
+
+    const getBestDefense = () => {
+        if (leaderboard.length === 0) return null;
+        return [...leaderboard].sort((a, b) => a.goalsAgainst - b.goalsAgainst)[0];
+    };
+
+    const topScorer = getTopScorer();
+    const bestDefense = getBestDefense();
 
     const renderH2H = () => {
         const matches = getH2HMatches();
@@ -208,6 +106,9 @@ export default function Statistics() {
 
         return (
             <div className="animate-fade-in">
+
+                <h3 className="section-title text-center mb-6">Compare Players</h3>
+
                 <div className="card mb-4" style={{ padding: '1.5rem', marginBottom: '2rem', position: 'relative', zIndex: 10 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '1rem', alignItems: 'center' }}>
                         <PlayerSelect
@@ -215,7 +116,6 @@ export default function Statistics() {
                             value={h2hA}
                             onChange={setH2hA}
                             players={players}
-                        // No onAddPlayer passed -> Select only
                         />
                         <div className="vs-text" style={{ paddingTop: '1.5rem', fontWeight: 'bold', fontSize: '1.2rem' }}>VS</div>
                         <PlayerSelect
@@ -267,22 +167,14 @@ export default function Statistics() {
                                         </div>
                                         <div className="match-card-score">
                                             <div className={`match-card-player ${match.scoreA > match.scoreB ? 'winner' : ''}`}>
-                                                <div
-                                                    className="match-card-player-name"
-                                                    onClick={() => handleReviewPlayer(match.playerA)}
-                                                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                                                >
+                                                <div className="match-card-player-name">
                                                     {match.playerA}
                                                 </div>
                                                 <div className="match-card-player-score">{match.scoreA}</div>
                                             </div>
                                             <div className="match-card-vs">vs</div>
                                             <div className={`match-card-player ${match.scoreB > match.scoreA ? 'winner' : ''}`}>
-                                                <div
-                                                    className="match-card-player-name"
-                                                    onClick={() => handleReviewPlayer(match.playerB)}
-                                                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                                                >
+                                                <div className="match-card-player-name">
                                                     {match.playerB}
                                                 </div>
                                                 <div className="match-card-player-score">{match.scoreB}</div>
@@ -307,8 +199,14 @@ export default function Statistics() {
         );
     };
 
-    const renderLeaderboard = () => (
-        <>
+    return (
+        <div className="stats-screen container animate-fade-in">
+            <button className="back-btn" onClick={() => actions.setScreen('home')}>
+                ← Back to Home
+            </button>
+
+            <h2 className="section-title">Statistics</h2>
+
             <div className="stats-grid">
                 <div className="stat-card card">
                     <div className="stat-value">{overall.totalMatches}</div>
@@ -328,110 +226,52 @@ export default function Statistics() {
                 </div>
             </div>
 
-            <div className="leaderboard">
-                <h3 className="section-title">League Table</h3>
+            {/* Records Section */}
+            {topScorer && (
+                <div style={{ marginTop: '2rem' }}>
+                    <h3 className="section-title">Season Records</h3>
+                    <div className="stats-grid">
+                        <div className="stat-card card">
+                            <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--color-primary)' }}>Golden Boot 👟</div>
+                            <div className="stat-value" style={{ fontSize: '1.5rem' }}>{topScorer.name}</div>
+                            <div className="stat-desc">{topScorer.goalsFor} Goals</div>
+                        </div>
 
-                {leaderboard.length === 0 ? (
-                    <div className="empty-state">
-                        <div className="empty-state-icon">🏆</div>
-                        <p>No matches played yet</p>
-                        <p className="text-muted">Play some matches to see the league table!</p>
+                        {bestDefense && (
+                            <div className="stat-card card">
+                                <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--color-secondary)' }}>Iron Wall 🛡️</div>
+                                <div className="stat-value" style={{ fontSize: '1.5rem' }}>{bestDefense.name}</div>
+                                <div className="stat-desc">{bestDefense.goalsAgainst} Goals Conceded</div>
+                            </div>
+                        )}
+
+                        {records.biggestWin && (
+                            <div className="stat-card card">
+                                <div className="stat-label" style={{ marginBottom: '0.5rem', color: '#10b981' }}>Biggest Win 🔥</div>
+                                <div className="stat-value" style={{ fontSize: '1.2rem' }}>
+                                    {records.biggestWin.scoreA > records.biggestWin.scoreB
+                                        ? `${records.biggestWin.playerA} ${records.biggestWin.scoreA}-${records.biggestWin.scoreB}`
+                                        : `${records.biggestWin.playerB} ${records.biggestWin.scoreB}-${records.biggestWin.scoreA}`
+                                    }
+                                </div>
+                                <div className="stat-desc">vs {records.biggestWin.scoreA > records.biggestWin.scoreB ? records.biggestWin.playerB : records.biggestWin.playerA}</div>
+                            </div>
+                        )}
+
+                        {records.highestScoringMatch && (
+                            <div className="stat-card card">
+                                <div className="stat-label" style={{ marginBottom: '0.5rem', color: '#f59e0b' }}>Thriller 🍿</div>
+                                <div className="stat-value" style={{ fontSize: '1.2rem' }}>
+                                    {records.highestScoringMatch.playerA} {records.highestScoringMatch.scoreA}-{records.highestScoringMatch.scoreB} {records.highestScoringMatch.playerB}
+                                </div>
+                                <div className="stat-desc">{records.highestScoringMatch.scoreA + records.highestScoringMatch.scoreB} Total Goals</div>
+                            </div>
+                        )}
                     </div>
-                ) : (
-                    <div className="table-container card" style={{ padding: 0, width: '100%', maxWidth: '100vw' }}>
-                        <table className="league-table">
-                            <thead>
-                                <tr>
-                                    <th className="text-left">#</th>
-                                    <th className="text-left">Team</th>
-                                    <th title="Matches Played">MP</th>
-                                    <th title="Wins">W</th>
-                                    <th title="Draws">D</th>
-                                    <th title="Losses">L</th>
-                                    <th title="Goals For">GF</th>
-                                    <th title="Goals Against">GA</th>
-                                    <th title="Goal Difference">GD</th>
-                                    <th>Pts</th>
-                                    <th>Last 5</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {leaderboard.map((player, index) => (
-                                    <tr
-                                        key={player.name}
-                                        onClick={() => setSelectedPlayer(player)}
-                                    >
-                                        <td className="text-left">
-                                            <span className={`leaderboard-rank ${getRankClass(index)}`}>
-                                                {index + 1}
-                                            </span>
-                                        </td>
-                                        <td className="team-cell">
-                                            {player.name}
-                                        </td>
-                                        <td>{player.matches}</td>
-                                        <td style={{ color: 'var(--color-success)' }}>{player.wins}</td>
-                                        <td style={{ color: 'var(--color-warning)' }}>{player.draws}</td>
-                                        <td style={{ color: 'var(--color-danger)' }}>{player.losses}</td>
-                                        <td>{player.goalsFor}</td>
-                                        <td>{player.goalsAgainst}</td>
-                                        <td>
-                                            <span style={{ color: player.goalDifference > 0 ? 'var(--color-success)' : player.goalDifference < 0 ? 'var(--color-danger)' : 'inherit' }}>
-                                                {player.goalDifference > 0 ? '+' : ''}{player.goalDifference}
-                                            </span>
-                                        </td>
-                                        <td className="points-cell">{player.points}</td>
-                                        <td>
-                                            <div className="form-badges">
-                                                {player.form && player.form.map((result, i) => (
-                                                    <div key={i} className={`form-badge ${result === 'W' ? 'win' : result === 'D' ? 'draw' : 'loss'}`}>
-                                                        {result}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
-        </>
-    );
-
-    return (
-        <div className="stats-screen container animate-fade-in">
-            <button className="back-btn" onClick={() => actions.setScreen('home')}>
-                ← Back to Home
-            </button>
-
-            <h2 className="section-title">Statistics</h2>
-
-            {/* View Switcher / Tabs */}
-            {!selectedPlayer && (
-                <div className="tabs" style={{ display: 'flex', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <button
-                        className={`btn btn-ghost ${activeTab === 'leaderboard' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('leaderboard')}
-                        style={{ borderBottom: activeTab === 'leaderboard' ? '2px solid var(--color-primary)' : 'none', borderRadius: 0 }}
-                    >
-                        🏆 Leaderboard
-                    </button>
-                    <button
-                        className={`btn btn-ghost ${activeTab === 'h2h' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('h2h')}
-                        style={{ borderBottom: activeTab === 'h2h' ? '2px solid var(--color-primary)' : 'none', borderRadius: 0 }}
-                    >
-                        🥊 Head to Head
-                    </button>
                 </div>
             )}
 
-            {/* Content Render */}
-            {selectedPlayer ? renderPlayerDetail() : (
-                activeTab === 'h2h' ? renderH2H() : renderLeaderboard()
-            )}
+            {renderH2H()}
         </div>
     );
 }

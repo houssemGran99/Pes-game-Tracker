@@ -32,11 +32,20 @@ export default function HomeScreen() {
                     <span>→</span>
                 </button>
 
+                <button className="nav-btn" onClick={() => actions.setScreen('leagueTable')}>
+                    <span className="nav-btn-icon">🏆</span>
+                    <div className="nav-btn-text">
+                        <div className="nav-btn-title">League Table</div>
+                        <div className="nav-btn-desc">Current standings</div>
+                    </div>
+                    <span>→</span>
+                </button>
+
                 <button className="nav-btn" onClick={() => actions.setScreen('stats')}>
                     <span className="nav-btn-icon">📊</span>
                     <div className="nav-btn-text">
                         <div className="nav-btn-title">Statistics</div>
-                        <div className="nav-btn-desc">Player rankings & records</div>
+                        <div className="nav-btn-desc">Head to Head & Records</div>
                     </div>
                     <span>→</span>
                 </button>
