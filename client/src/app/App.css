@@ -868,9 +868,16 @@ body {
 }
 
 /* League Table */
+/* League Table */
 .table-container {
   overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  /* Ensure it behaves as a block for scrolling */
   border-radius: var(--radius-lg) !important;
+  -webkit-overflow-scrolling: touch;
+  /* Smooth scrolling on iOS */
 }
 
 .league-table {

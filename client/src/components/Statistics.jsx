@@ -338,7 +338,7 @@ export default function Statistics() {
                         <p className="text-muted">Play some matches to see the league table!</p>
                     </div>
                 ) : (
-                    <div className="table-container card" style={{ padding: 0 }}>
+                    <div className="table-container card" style={{ padding: 0, width: '100%', maxWidth: '100vw' }}>
                         <table className="league-table">
                             <thead>
                                 <tr>
