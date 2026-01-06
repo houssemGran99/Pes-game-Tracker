@@ -84,3 +84,21 @@ export const submitMatch = async (matchData) => {
     if (!res.ok) throw new Error('Failed to submit match');
     return await res.json();
 };
+
+export const updateMatch = async (id, updateData) => {
+    const res = await fetch(`${API_URL}/matches/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+    });
+    if (!res.ok) throw new Error('Failed to update match');
+    return await res.json();
+};
+
+export const deleteMatch = async (id) => {
+    const res = await fetch(`${API_URL}/matches/${id}`, {
+        method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete match');
+    return await res.json();
+};

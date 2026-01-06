@@ -98,4 +98,30 @@ router.post('/matches', async (req, res) => {
     }
 });
 
+router.delete('/matches/:id', async (req, res) => {
+    try {
+        const match = await Match.findByIdAndDelete(req.params.id);
+        if (!match) return res.status(404).json({ message: 'Match not found' });
+        res.json({ message: 'Match deleted' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.put('/matches/:id', async (req, res) => {
+    try {
+        const { scoreA, scoreB } = req.body;
+        const match = await Match.findById(req.params.id);
+        if (!match) return res.status(404).json({ message: 'Match not found' });
+
+        if (scoreA !== undefined) match.scoreA = scoreA;
+        if (scoreB !== undefined) match.scoreB = scoreB;
+
+        const updatedMatch = await match.save();
+        res.json(updatedMatch);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
 export default router;
