@@ -60,18 +60,24 @@ export const fetchTournament = async (id) => {
     }
 };
 
-export const fetchMatches = async (tournamentId = null) => {
+export const fetchMatches = async (tournamentId = null, page = 1, limit = 10) => {
     try {
-        let url = `${API_URL}/matches`;
+        let url = `${API_URL}/matches?page=${page}&limit=${limit}`;
         if (tournamentId) {
-            url += `?tournamentId=${tournamentId}`;
+            url += `&tournamentId=${tournamentId}`;
         }
         const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch matches');
-        return await res.json();
+
+        const data = await res.json();
+        // Return full pagination object if available, else assume array (legacy fallback if needed)
+        if (Array.isArray(data)) {
+            return { matches: data, totalPages: 1, currentPage: 1 };
+        }
+        return data; // { matches, totalPages, currentPage, totalMatches }
     } catch (error) {
         console.error('API Error:', error);
-        return [];
+        return { matches: [], totalPages: 0, currentPage: 1 };
     }
 };
 

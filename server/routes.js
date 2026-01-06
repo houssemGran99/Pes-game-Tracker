@@ -66,23 +66,31 @@ router.get('/matches', async (req, res) => {
     try {
         const filter = {};
         if (req.query.tournamentId) {
-            filter.tournamentId = req.query.tournamentId;
-        } else {
-            // If expressly asking for global matches (no tournament), pass 'null' or nothing?
-            // For now, let's say if NO tournamentId provided, we return ALL matches? 
-            // Or should we only return non-tournament matches?
-            // Usually "League Table" implies global, but maybe we want to separate?
-            // Let's support an explicit "null" check if needed, but for now:
-            // if tournamentId is present, filter by it.
-            // if not, return all (backward compatibility) OR maybe we want only friendlies?
-            // Let's assume if query param `tournamentId` is explicitly 'null', we search for null.
             if (req.query.tournamentId === 'null') {
                 filter.tournamentId = null;
+            } else {
+                filter.tournamentId = req.query.tournamentId;
             }
         }
 
-        const matches = await Match.find(filter).sort({ date: -1 });
-        res.json(matches);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const totalMatches = await Match.countDocuments(filter);
+        const matches = await Match.find(filter)
+            .sort({ date: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalPages = Math.ceil(totalMatches / limit);
+
+        res.json({
+            matches,
+            totalPages,
+            currentPage: page,
+            totalMatches
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
