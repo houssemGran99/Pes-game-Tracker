@@ -793,6 +793,56 @@ body {
   padding: var(--space-lg);
 }
 
+/* Tournament Winner */
+.winner-banner {
+  background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+  color: #fff;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+.winner-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite linear;
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+    transform: scale(1);
+  }
+
+  50% {
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.6);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  100% {
+    transform: translateX(50%) rotate(45deg);
+  }
+}
+
 .stat-value {
   font-size: var(--font-size-3xl);
   font-weight: 800;

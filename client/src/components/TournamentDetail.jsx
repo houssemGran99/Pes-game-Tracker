@@ -2,14 +2,69 @@ import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
 import { fetchMatches, updateTournament } from '../utils/api';
 import { calculateOverallStats, calculateLeaderboard } from '../utils/stats';
+import { useAuth } from '../context/AuthContext';
+import PlayerSelect from './PlayerSelect';
 
 export default function TournamentDetail() {
     const { state, actions } = useMatch();
+    const { isAdmin } = useAuth();
     const { currentTournament } = state;
     const [matches, setMatches] = useState([]);
-    const [stats, setStats] = useState(null);
     const [leaderboard, setLeaderboard] = useState([]);
     const [view, setView] = useState('table'); // 'table', 'matches' or 'addMatch'
+
+    // Edit State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editName, setEditName] = useState('');
+    const [editMaxPoints, setEditMaxPoints] = useState('');
+    const [editParticipants, setEditParticipants] = useState([]);
+    const [currentPlayer, setCurrentPlayer] = useState('');
+
+    const startEditing = () => {
+        setEditName(currentTournament.name);
+        setEditMaxPoints(currentTournament.maxPoints || '');
+        setEditParticipants([...currentTournament.participants]);
+        setIsEditing(true);
+    };
+
+    const handleSaveTournament = async () => {
+        if (!editName.trim() || editParticipants.length < 2) {
+            alert("Name required and at least 2 participants.");
+            return;
+        }
+
+        try {
+            await updateTournament(currentTournament._id, {
+                name: editName,
+                maxPoints: editMaxPoints ? parseInt(editMaxPoints) : null,
+                participants: editParticipants
+            });
+
+            // Update local state
+            actions.setTournament({
+                ...currentTournament,
+                name: editName,
+                maxPoints: editMaxPoints ? parseInt(editMaxPoints) : null,
+                participants: editParticipants
+            });
+            setIsEditing(false);
+        } catch (err) {
+            alert('Failed to update tournament');
+        }
+    };
+
+    const handleAddParticipant = (name) => {
+        if (!name.trim()) return;
+        if (!editParticipants.includes(name)) {
+            setEditParticipants([...editParticipants, name]);
+        }
+    };
+
+    const handleRemoveParticipant = (name) => {
+        if (confirm(`Remove ${name} from tournament? Matches involving them might be affected.`)) {
+            setEditParticipants(editParticipants.filter(p => p !== name));
+        }
+    };
 
     const checkWinner = async (sortedLb, tournamentId) => {
         if (!currentTournament.maxPoints || currentTournament.status === 'completed') return;
@@ -27,7 +82,7 @@ export default function TournamentDetail() {
                     status: 'completed',
                     winner: winner.name
                 });
-                alert(`🏆 ${winner.name} has won the tournament!`);
+                // alert(`🏆 ${winner.name} has won the tournament!`); // Removed per user request
             } catch (err) {
                 console.error('Failed to update tournament status', err);
             }
@@ -59,19 +114,60 @@ export default function TournamentDetail() {
             lb.sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
             setLeaderboard(lb);
 
-            // Check for winner
-            checkWinner(lb, currentTournament._id);
+            // Check for winner only if active
+            if (currentTournament.status !== 'completed') {
+                checkWinner(lb, currentTournament._id);
+            }
         };
         loadData();
-    }, [currentTournament]); // Re-run when currentTournament changes (including its status update) OR matches update? 
-    // Ideally we should reload match data if a match finishes. 
-    // The context updates currentTournament only if we explicitly set it.
-    // We might need to depend on 'matches' or 'data' fetching trigger?
-    // For now, this logic runs on mount or when tournament obj changes.
+    }, [currentTournament]);
 
     if (!currentTournament) return null;
 
     const isCompleted = currentTournament.status === 'completed';
+
+    if (isEditing) {
+        return (
+            <div className="tournament-detail-screen container animate-fade-in">
+                <div className="card">
+                    <h3>Edit Tournament</h3>
+                    <div className="form-group">
+                        <label>Name</label>
+                        <input className="form-input" value={editName} onChange={e => setEditName(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                        <label>Target Points (Optional)</label>
+                        <input className="form-input" type="number" value={editMaxPoints} onChange={e => setEditMaxPoints(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                        <label>Participants</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                            {editParticipants.map(p => (
+                                <span key={p} className="badge" style={{ padding: '0.4rem 0.8rem', backgroundColor: '#e2e8f0', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    {p}
+                                    <button onClick={() => handleRemoveParticipant(p)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}>×</button>
+                                </span>
+                            ))}
+                        </div>
+                        <PlayerSelect
+                            label="Add Participant"
+                            value={currentPlayer}
+                            onChange={(name) => handleAddParticipant(name)}
+                            players={state.players.filter(p => !editParticipants.includes(p))}
+                            onAddPlayer={(name) => {
+                                actions.addPlayer(name);
+                                handleAddParticipant(name);
+                            }}
+                        />
+                    </div>
+                    <div className="form-actions" style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <button className="btn btn-primary" onClick={handleSaveTournament}>Save Changes</button>
+                        <button className="btn btn-ghost" onClick={() => setIsEditing(false)}>Cancel</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="tournament-detail-screen container animate-fade-in">
@@ -82,7 +178,12 @@ export default function TournamentDetail() {
                 }} style={{ margin: 0 }}>
                     ← Back
                 </button>
-                <h2 className="section-title" style={{ margin: 0, fontSize: '1.2rem' }}>{currentTournament.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <h2 className="section-title" style={{ margin: 0, fontSize: '1.2rem' }}>{currentTournament.name}</h2>
+                    {isAdmin && !isCompleted && (
+                        <button onClick={startEditing} className="btn-sm" style={{ background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
+                    )}
+                </div>
             </div>
 
             {isCompleted && currentTournament.winner && (
