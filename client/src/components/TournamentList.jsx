@@ -8,6 +8,7 @@ export default function TournamentList() {
     const [tournaments, setTournaments] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
     const [newTournamentName, setNewTournamentName] = useState('');
+    const [maxPoints, setMaxPoints] = useState('');
     const [participants, setParticipants] = useState([]);
     const [currentPlayer, setCurrentPlayer] = useState('');
 
@@ -30,11 +31,13 @@ export default function TournamentList() {
             const created = await createTournament({
                 name: newTournamentName,
                 participants,
-                status: 'active'
+                status: 'active',
+                maxPoints: maxPoints ? parseInt(maxPoints) : null
             });
             setTournaments([created, ...tournaments]);
             setIsCreating(false);
             setNewTournamentName('');
+            setMaxPoints('');
             setParticipants([]);
         } catch (err) {
             alert('Failed to create tournament');
@@ -115,6 +118,17 @@ export default function TournamentList() {
                             value={newTournamentName}
                             onChange={e => setNewTournamentName(e.target.value)}
                             placeholder="e.g. Summer Cup 2026"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Target Points (Optional)</label>
+                        <input
+                            type="number"
+                            className="form-input"
+                            value={maxPoints}
+                            onChange={e => setMaxPoints(e.target.value)}
+                            placeholder="Points needed to win"
                         />
                     </div>
 

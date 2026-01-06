@@ -60,6 +60,19 @@ export const fetchTournament = async (id) => {
     }
 };
 
+export const updateTournament = async (id, data) => {
+    const res = await fetch(`${API_URL}/tournaments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to update tournament');
+    }
+    return await res.json();
+};
+
 export const fetchMatches = async (tournamentId = null, page = null, limit = null) => {
     try {
         let url = `${API_URL}/matches`;

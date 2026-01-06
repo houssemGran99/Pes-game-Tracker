@@ -61,6 +61,16 @@ router.get('/tournaments/:id', async (req, res) => {
     }
 });
 
+router.put('/tournaments/:id', async (req, res) => {
+    try {
+        const tournament = await Tournament.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!tournament) return res.status(404).json({ message: 'Tournament not found' });
+        res.json(tournament);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
 // --- Matches ---
 router.get('/matches', async (req, res) => {
     try {

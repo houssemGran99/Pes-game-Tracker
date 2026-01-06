@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
-import { fetchMatches } from '../utils/api';
+import { fetchMatches, updateTournament } from '../utils/api';
 import { calculateOverallStats, calculateLeaderboard } from '../utils/stats';
-import LeagueTable from './LeagueTable'; // We can potentially reuse this or parts of it?
-// Actually, it's better to reuse logic but the `LeagueTable` component is a full screen component.
-// We might want to "embed" the table part or just rebuild a similar view for the tournament context.
-// Given the user request "make it possible to add a tournament... and every tournament have its own league table",
-// reusing the LeagueTable component but passing filtered matches is the smartest way if possible.
 
 export default function TournamentDetail() {
     const { state, actions } = useMatch();
@@ -16,24 +11,37 @@ export default function TournamentDetail() {
     const [leaderboard, setLeaderboard] = useState([]);
     const [view, setView] = useState('table'); // 'table', 'matches' or 'addMatch'
 
-    // We can just reuse logic for now.
+    const checkWinner = async (sortedLb, tournamentId) => {
+        if (!currentTournament.maxPoints || currentTournament.status === 'completed') return;
+
+        const winner = sortedLb.find(p => p.points >= currentTournament.maxPoints);
+        if (winner) {
+            try {
+                await updateTournament(tournamentId, {
+                    status: 'completed',
+                    winner: winner.name
+                });
+                // Update local state to reflect change immediately
+                actions.setTournament({
+                    ...currentTournament,
+                    status: 'completed',
+                    winner: winner.name
+                });
+                alert(`🏆 ${winner.name} has won the tournament!`);
+            } catch (err) {
+                console.error('Failed to update tournament status', err);
+            }
+        }
+    };
+
     useEffect(() => {
         if (!currentTournament) return;
         const loadData = async () => {
             const data = await fetchMatches(currentTournament._id);
             setMatches(data);
-            // Ensure we only consider matches for this tournament.
-            // The API filter should handle it, but double check? 
-            // Logic: stats utils work on a list of matches.
-            // We need to make sure the leaderboard ONLY includes participants even if they have played 0 matches.
-            // The standard `calculateLeaderboard` might only include players found in matches.
-            // Let's see if we need to adjust that.
 
             let lb = calculateLeaderboard(data);
 
-            // Ensure all tournament participants are in the leaderboard
-            // If a participant hasn't played, they won't be in `lb` likely.
-            // Let's merge.
             const participantNames = currentTournament.participants || [];
             const lbNames = new Set(lb.map(p => p.name));
 
@@ -41,34 +49,29 @@ export default function TournamentDetail() {
                 if (!lbNames.has(name)) {
                     lb.push({
                         name,
-                        matches: 0,
-                        wins: 0,
-                        losses: 0,
-                        draws: 0,
-                        goalsFor: 0,
-                        goalsAgainst: 0,
-                        goalDifference: 0,
-                        points: 0,
+                        matches: 0, wins: 0, losses: 0, draws: 0,
+                        goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0,
                         form: []
                     });
                 }
             });
 
-            // Re-sort
             lb.sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
-
             setLeaderboard(lb);
+
+            // Check for winner
+            checkWinner(lb, currentTournament._id);
         };
         loadData();
-    }, [currentTournament]);
-
-    // Helper to reuse LeagueTable logic?
-    // The `LeagueTable` component has its own data fetching. 
-    // It might be better to modify `LeagueTable` to accept `matches` and `leaderboard` as props optionally,
-    // OR create a specialized view here.
-    // Let's create a specialized view here to keep it self-contained for now, as it also needs "Add Match" specific to tournament.
+    }, [currentTournament]); // Re-run when currentTournament changes (including its status update) OR matches update? 
+    // Ideally we should reload match data if a match finishes. 
+    // The context updates currentTournament only if we explicitly set it.
+    // We might need to depend on 'matches' or 'data' fetching trigger?
+    // For now, this logic runs on mount or when tournament obj changes.
 
     if (!currentTournament) return null;
+
+    const isCompleted = currentTournament.status === 'completed';
 
     return (
         <div className="tournament-detail-screen container animate-fade-in">
@@ -81,6 +84,22 @@ export default function TournamentDetail() {
                 </button>
                 <h2 className="section-title" style={{ margin: 0, fontSize: '1.2rem' }}>{currentTournament.name}</h2>
             </div>
+
+            {isCompleted && currentTournament.winner && (
+                <div className="winner-banner card" style={{
+                    background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)',
+                    color: '#fff',
+                    textAlign: 'center',
+                    marginBottom: '1.5rem',
+                    padding: '2rem'
+                }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🏆</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Tournament Winner</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: '900', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                        {currentTournament.winner}
+                    </div>
+                </div>
+            )}
 
             <div className="tournament-actions" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginBottom: '1.5rem' }}>
                 <button
@@ -95,17 +114,19 @@ export default function TournamentDetail() {
                 >
                     Matches
                 </button>
-                <button
-                    className="btn btn-success"
-                    onClick={() => {
-                        setView('addMatch');
-                    }}
-                >
-                    + New Match
-                </button>
+                {!isCompleted && (
+                    <button
+                        className="btn btn-success"
+                        onClick={() => {
+                            setView('addMatch');
+                        }}
+                    >
+                        + New Match
+                    </button>
+                )}
             </div>
 
-            {view === 'addMatch' && (
+            {view === 'addMatch' && !isCompleted && (
                 <LocalNewMatch
                     participants={currentTournament.participants}
                     onCancel={() => setView('table')}
