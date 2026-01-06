@@ -23,7 +23,18 @@ export default function HomeScreen() {
                     </button>
                 )}
 
-                <button className="nav-btn" onClick={() => actions.setScreen('history')}>
+              
+
+                <button className="nav-btn" onClick={() => actions.setScreen('leagueTable')}>
+                    <span className="nav-btn-icon">📋</span>
+                    <div className="nav-btn-text">
+                        <div className="nav-btn-title">League Table</div>
+                        <div className="nav-btn-desc">Current standings</div>
+                    </div>
+                    <span>→</span>
+                </button>
+
+  <button className="nav-btn" onClick={() => actions.setScreen('history')}>
                     <span className="nav-btn-icon">📜</span>
                     <div className="nav-btn-text">
                         <div className="nav-btn-title">Match History</div>
@@ -32,11 +43,11 @@ export default function HomeScreen() {
                     <span>→</span>
                 </button>
 
-                <button className="nav-btn" onClick={() => actions.setScreen('leagueTable')}>
+                <button className="nav-btn" onClick={() => actions.setScreen('tournamentList')}>
                     <span className="nav-btn-icon">🏆</span>
                     <div className="nav-btn-text">
-                        <div className="nav-btn-title">League Table</div>
-                        <div className="nav-btn-desc">Current standings</div>
+                        <div className="nav-btn-title">Tournaments</div>
+                        <div className="nav-btn-desc">Custom Leagues & Cups</div>
                     </div>
                     <span>→</span>
                 </button>
@@ -50,14 +61,6 @@ export default function HomeScreen() {
                     <span>→</span>
                 </button>
 
-                <button className="nav-btn" onClick={() => actions.setScreen('tournamentList')}>
-                    <span className="nav-btn-icon">🏆</span>
-                    <div className="nav-btn-text">
-                        <div className="nav-btn-title">Tournaments</div>
-                        <div className="nav-btn-desc">Custom Leagues & Cups</div>
-                    </div>
-                    <span>→</span>
-                </button>
 
                 <button className="nav-btn" onClick={logout} style={{ marginTop: '2rem', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0' }}>
                     <span className="nav-btn-icon">🚪</span>

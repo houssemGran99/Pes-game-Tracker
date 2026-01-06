@@ -1,8 +1,25 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+const apiRequest = async (url, options = {}) => {
+    // Dispatch loading start
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('api-loading', { detail: true }));
+    }
+
+    try {
+        const res = await fetch(url, options);
+        return res;
+    } finally {
+        // Dispatch loading end
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('api-loading', { detail: false }));
+        }
+    }
+};
+
 export const fetchPlayers = async () => {
     try {
-        const res = await fetch(`${API_URL}/players`, { cache: 'no-store' });
+        const res = await apiRequest(`${API_URL}/players`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch players');
         return await res.json();
     } catch (error) {
@@ -12,7 +29,7 @@ export const fetchPlayers = async () => {
 };
 
 export const createPlayer = async (name) => {
-    const res = await fetch(`${API_URL}/players`, {
+    const res = await apiRequest(`${API_URL}/players`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -27,7 +44,7 @@ export const createPlayer = async (name) => {
 
 export const fetchTournaments = async () => {
     try {
-        const res = await fetch(`${API_URL}/tournaments`, { cache: 'no-store' });
+        const res = await apiRequest(`${API_URL}/tournaments`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch tournaments');
         return await res.json();
     } catch (error) {
@@ -37,7 +54,7 @@ export const fetchTournaments = async () => {
 };
 
 export const createTournament = async (tournamentData) => {
-    const res = await fetch(`${API_URL}/tournaments`, {
+    const res = await apiRequest(`${API_URL}/tournaments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(tournamentData),
@@ -51,7 +68,7 @@ export const createTournament = async (tournamentData) => {
 
 export const fetchTournament = async (id) => {
     try {
-        const res = await fetch(`${API_URL}/tournaments/${id}`, { cache: 'no-store' });
+        const res = await apiRequest(`${API_URL}/tournaments/${id}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch tournament');
         return await res.json();
     } catch (error) {
@@ -61,7 +78,7 @@ export const fetchTournament = async (id) => {
 };
 
 export const updateTournament = async (id, data) => {
-    const res = await fetch(`${API_URL}/tournaments/${id}`, {
+    const res = await apiRequest(`${API_URL}/tournaments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -85,7 +102,7 @@ export const fetchMatches = async (tournamentId = null, page = null, limit = nul
         const queryString = params.toString();
         if (queryString) url += `?${queryString}`;
 
-        const res = await fetch(url, { cache: 'no-store' });
+        const res = await apiRequest(url, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch matches');
 
         const data = await res.json();
@@ -97,7 +114,7 @@ export const fetchMatches = async (tournamentId = null, page = null, limit = nul
 };
 
 export const submitMatch = async (matchData) => {
-    const res = await fetch(`${API_URL}/matches`, {
+    const res = await apiRequest(`${API_URL}/matches`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(matchData),
@@ -107,7 +124,7 @@ export const submitMatch = async (matchData) => {
 };
 
 export const updateMatch = async (id, updateData) => {
-    const res = await fetch(`${API_URL}/matches/${id}`, {
+    const res = await apiRequest(`${API_URL}/matches/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData),
@@ -117,7 +134,7 @@ export const updateMatch = async (id, updateData) => {
 };
 
 export const deleteMatch = async (id) => {
-    const res = await fetch(`${API_URL}/matches/${id}`, {
+    const res = await apiRequest(`${API_URL}/matches/${id}`, {
         method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete match');

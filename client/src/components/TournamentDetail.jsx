@@ -195,7 +195,7 @@ export default function TournamentDetail() {
                     padding: '2rem'
                 }}>
                     <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🏆</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Tournament Winner</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{currentTournament.name} Winner</div>
                     <div style={{ fontSize: '2.5rem', fontWeight: '900', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
                         {currentTournament.winner}
                     </div>

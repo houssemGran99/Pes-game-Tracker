@@ -142,6 +142,76 @@ body {
   white-space: nowrap;
 }
 
+/* Tournament List Responsive Grid */
+.tournament-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .tournament-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .tournament-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.tournament-card {
+  padding: 1.5rem;
+  background: var(--gradient-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.tournament-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+.tournament-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-sm);
+}
+
+.tournament-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text-primary);
+}
+
+.tournament-status {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-secondary);
+}
+
+.tournament-card.completed .tournament-status {
+  background: var(--color-success);
+  color: #000;
+}
+
+.tournament-details {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: auto;
+}
+
 .btn:active {
   transform: scale(0.98);
 }
@@ -1064,4 +1134,104 @@ body {
   .player-name {
     max-width: 90px;
   }
+}
+
+/* Global Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Bouncing Football Animation */
+.ball-bouncer {
+  animation: bounce 0.6s infinite alternate cubic-bezier(0.5, 0.05, 1, 0.5);
+}
+
+.loading-ball {
+  width: 40px;
+  height: 40px;
+  background-color: #f0f0f0;
+  /* Simple geometric pattern to simulate a football */
+  background-image:
+    radial-gradient(circle at 50% 120%, #1a1a1a 18%, transparent 20%),
+    radial-gradient(circle at 50% -20%, #1a1a1a 18%, transparent 20%),
+    radial-gradient(circle at 110% 48%, #1a1a1a 18%, transparent 20%),
+    radial-gradient(circle at -10% 48%, #1a1a1a 18%, transparent 20%),
+    radial-gradient(circle at 20% 20%, #1a1a1a 12%, transparent 14%),
+    radial-gradient(circle at 80% 80%, #1a1a1a 12%, transparent 14%);
+
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  box-shadow: inset -4px -4px 8px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 212, 255, 0.2);
+
+  animation: spin 1s infinite linear;
+}
+
+.loading-shadow {
+  width: 36px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  margin-top: 5px;
+  /* Adjust spacing */
+  animation: shadowScale 0.6s infinite alternate cubic-bezier(0.5, 0.05, 1, 0.5);
+  filter: blur(2px);
+}
+
+.loading-wrapper {
+  position: relative;
+  width: 100px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(30px) scale(1.05, 0.95);
+  }
+
+  /* Hit ground */
+  100% {
+    transform: translateY(-50px) scale(0.95, 1.05);
+  }
+
+  /* Top of arc */
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shadowScale {
+  0% {
+    transform: scale(1.2);
+    opacity: 0.6;
+  }
+
+  /* Hit ground (large shadow) */
+  100% {
+    transform: scale(0.5);
+    opacity: 0.2;
+  }
+
+  /* Top of arc (small shadow) */
 }

@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 
 import { useMatch } from './context/MatchContext';
 import { useAuth } from './context/AuthContext';
@@ -29,6 +30,14 @@ function MainApp() {
     return <LoginScreen />;
   }
 
+  const [isGlobalLoading, setIsGlobalLoading] = useState(false);
+
+  useEffect(() => {
+    const handleLoading = (e) => setIsGlobalLoading(e.detail);
+    window.addEventListener('api-loading', handleLoading);
+    return () => window.removeEventListener('api-loading', handleLoading);
+  }, []);
+
   const renderScreen = () => {
     switch (state.screen) {
       case 'home':
@@ -56,6 +65,16 @@ function MainApp() {
 
   return (
     <div className="app">
+      {isGlobalLoading && (
+        <div className="loading-overlay">
+          <div className="loading-wrapper">
+            <div className="ball-bouncer">
+              <div className="loading-ball"></div>
+            </div>
+            <div className="loading-shadow"></div>
+          </div>
+        </div>
+      )}
       <div className="container">
         {renderScreen()}
       </div>

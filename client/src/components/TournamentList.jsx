@@ -73,34 +73,28 @@ export default function TournamentList() {
                         + Create New Tournament
                     </button>
 
-                    <div className="tournament-list card" style={{ padding: 0 }}>
+                    <div className="tournament-grid">
                         {tournaments.length === 0 ? (
-                            <div className="p-4 text-center text-muted">No tournaments found</div>
+                            <div className="p-4 text-center text-muted card" style={{ gridColumn: '1 / -1' }}>No tournaments found</div>
                         ) : (
                             tournaments.map(t => (
                                 <div
                                     key={t._id || t.id}
-                                    className="tournament-item"
+                                    className={`tournament-card ${t.status === 'completed' ? 'completed' : ''}`}
                                     onClick={() => {
                                         actions.setTournament(t);
                                         actions.setScreen('tournamentDetail');
                                     }}
-                                    style={{
-                                        padding: '1rem',
-                                        borderBottom: '1px solid var(--border-color)',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center'
-                                    }}
                                 >
-                                    <div>
-                                        <div style={{ fontWeight: 'bold' }}>{t.name}</div>
-                                        <div className="text-muted" style={{ fontSize: '0.85rem' }}>
-                                            {t.participants.length} Participants • {new Date(t.startDate).toLocaleDateString()}
-                                        </div>
+                                    <div className="tournament-card-header">
+                                        <div className="tournament-name">{t.name}</div>
+                                        {t.status === 'completed' && <span className="tournament-status">Completed</span>}
                                     </div>
-                                    <div>→</div>
+                                    <div className="tournament-details">
+                                        <div>{t.participants.length} Participants</div>
+                                        <div style={{ marginTop: '0.25rem' }}>{new Date(t.startDate).toLocaleDateString()}</div>
+                                        {t.winner && <div style={{ marginTop: '0.5rem', color: 'var(--color-primary)' }}>🏆 {t.winner}</div>}
+                                    </div>
                                 </div>
                             ))
                         )}
