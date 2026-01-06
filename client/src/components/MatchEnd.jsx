@@ -36,6 +36,7 @@ export default function MatchEnd() {
                 scoreA,
                 scoreB,
                 matchType,
+                tournamentId: currentMatch.tournamentId,
                 goalEvents: currentMatch.goalEvents,
             });
             actions.resetMatch();

@@ -267,6 +267,14 @@ export default function Statistics() {
                                 <div className="stat-desc">{records.highestScoringMatch.scoreA + records.highestScoringMatch.scoreB} Total Goals</div>
                             </div>
                         )}
+
+                        {records.longestStreak && (
+                            <div className="stat-card card">
+                                <div className="stat-label" style={{ marginBottom: '0.5rem', color: '#8b5cf6' }}>Unstoppable 🚀</div>
+                                <div className="stat-value" style={{ fontSize: '1.5rem' }}>{records.longestStreak.name}</div>
+                                <div className="stat-desc">{records.longestStreak.count} Win Streak</div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

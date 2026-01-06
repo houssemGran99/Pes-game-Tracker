@@ -13,6 +13,9 @@ const initialState = {
 
     // Players list
     players: [],
+
+    // Tournaments
+    currentTournament: null,
 };
 
 // Action types
@@ -25,6 +28,7 @@ const ACTIONS = {
     RESET_MATCH: 'RESET_MATCH',
     ADD_PLAYER: 'ADD_PLAYER',
     INIT_PLAYERS: 'INIT_PLAYERS',
+    SET_TOURNAMENT: 'SET_TOURNAMENT',
 };
 
 // Reducer
@@ -35,6 +39,9 @@ function matchReducer(state, action) {
                 return { ...state, screen: action.payload.name, screenParams: action.payload.params };
             }
             return { ...state, screen: action.payload, screenParams: null };
+
+        case ACTIONS.SET_TOURNAMENT:
+            return { ...state, currentTournament: action.payload };
 
         case ACTIONS.INIT_PLAYERS:
             return { ...state, players: action.payload };
@@ -55,6 +62,7 @@ function matchReducer(state, action) {
                 currentMatch: {
                     playerA: action.payload.playerA,
                     playerB: action.payload.playerB,
+                    tournamentId: action.payload.tournamentId || (state.currentTournament ? state.currentTournament._id : null),
                     scoreA: 0,
                     scoreB: 0,
                     goalEvents: [],
@@ -97,9 +105,19 @@ function matchReducer(state, action) {
             return { ...state, screen: 'matchEnd' };
 
         case ACTIONS.RESET_MATCH:
+            // return to tournament screen if we were in one, else home
+            // Actually, keep it simple: go to 'matchEnd' -> save -> then decide where to go.
+            // But resetMatch usually goes "Home". 
+            // If we are in a tournament, we probably want to go back to tournament detail.
+            // Let's modify this in the hook action wrapper or components instead if needed.
+            // For now, simple reset to home is default behavior, but let's check current screen flow.
+            // We usually call resetMatch ONE time after saving. 
+            // If currentTournament is set, maybe we should set screen to 'tournamentDetail' instead of 'home'?
+
+            const nextScreen = state.currentTournament ? 'tournamentDetail' : 'home';
             return {
                 ...state,
-                screen: 'home',
+                screen: nextScreen,
                 currentMatch: null,
             };
 
@@ -128,12 +146,17 @@ export function MatchProvider({ children }) {
 
     const actions = {
         setScreen: (screen, params = null) => {
+            if (screen === 'home') {
+                // Clear tournament when going home
+                dispatch({ type: ACTIONS.SET_TOURNAMENT, payload: null });
+            }
             if (params) {
                 dispatch({ type: ACTIONS.SET_SCREEN, payload: { name: screen, params } });
             } else {
                 dispatch({ type: ACTIONS.SET_SCREEN, payload: screen });
             }
         },
+        setTournament: (tournament) => dispatch({ type: ACTIONS.SET_TOURNAMENT, payload: tournament }),
         startMatch: (matchData) => dispatch({ type: ACTIONS.START_MATCH, payload: matchData }),
         addGoal: (player) => dispatch({ type: ACTIONS.ADD_GOAL, payload: player }),
         undoGoal: () => dispatch({ type: ACTIONS.UNDO_GOAL }),

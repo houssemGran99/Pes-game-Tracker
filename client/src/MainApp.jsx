@@ -10,6 +10,8 @@ import MatchEnd from './components/MatchEnd';
 import MatchHistory from './components/MatchHistory';
 import Statistics from './components/Statistics';
 import LeagueTable from './components/LeagueTable';
+import TournamentList from './components/TournamentList';
+import TournamentDetail from './components/TournamentDetail';
 
 function MainApp() {
   const { state } = useMatch();
@@ -43,6 +45,10 @@ function MainApp() {
         return <LeagueTable />;
       case 'stats':
         return <Statistics />;
+      case 'tournamentList':
+        return <TournamentList />;
+      case 'tournamentDetail':
+        return <TournamentDetail />;
       default:
         return <HomeScreen />;
     }

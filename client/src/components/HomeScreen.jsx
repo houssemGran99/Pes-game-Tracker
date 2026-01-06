@@ -50,6 +50,15 @@ export default function HomeScreen() {
                     <span>→</span>
                 </button>
 
+                <button className="nav-btn" onClick={() => actions.setScreen('tournamentList')}>
+                    <span className="nav-btn-icon">🏆</span>
+                    <div className="nav-btn-text">
+                        <div className="nav-btn-title">Tournaments</div>
+                        <div className="nav-btn-desc">Custom Leagues & Cups</div>
+                    </div>
+                    <span>→</span>
+                </button>
+
                 <button className="nav-btn" onClick={logout} style={{ marginTop: '2rem', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0' }}>
                     <span className="nav-btn-icon">🚪</span>
                     <div className="nav-btn-text">

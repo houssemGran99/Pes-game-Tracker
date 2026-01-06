@@ -95,6 +95,7 @@ export const calculateLeaderboard = (matches) => {
         });
 };
 
+// Calculate additional records
 export const calculateRecords = (matches) => {
     let biggestWin = null;
     let highestScoringMatch = null;
@@ -114,5 +115,54 @@ export const calculateRecords = (matches) => {
         }
     });
 
-    return { biggestWin, highestScoringMatch };
+    const longestStreak = calculateStreaks(matches);
+
+    return { biggestWin, highestScoringMatch, longestStreak };
+};
+
+// Calculate Longest Win Streak
+const calculateStreaks = (matches) => {
+    // We need to re-group matches by player and sort by date ASC
+    const playerMatches = {};
+
+    matches.forEach(match => {
+        if (!playerMatches[match.playerA]) playerMatches[match.playerA] = [];
+        if (!playerMatches[match.playerB]) playerMatches[match.playerB] = [];
+
+        playerMatches[match.playerA].push({
+            date: new Date(match.date),
+            isWin: match.scoreA > match.scoreB
+        });
+
+        playerMatches[match.playerB].push({
+            date: new Date(match.date),
+            isWin: match.scoreB > match.scoreA
+        });
+    });
+
+    let bestStreak = { name: '', count: 0 };
+
+    Object.entries(playerMatches).forEach(([name, history]) => {
+        // Sort by date old -> new
+        history.sort((a, b) => a.date - b.date);
+
+        let currentStreak = 0;
+        let maxStreak = 0;
+
+        history.forEach(m => {
+            if (m.isWin) {
+                currentStreak++;
+            } else {
+                // If it's a draw, does it break the streak? usually yes.
+                currentStreak = 0;
+            }
+            if (currentStreak > maxStreak) maxStreak = currentStreak;
+        });
+
+        if (maxStreak > bestStreak.count) {
+            bestStreak = { name, count: maxStreak };
+        }
+    });
+
+    return bestStreak.count > 0 ? bestStreak : null;
 };

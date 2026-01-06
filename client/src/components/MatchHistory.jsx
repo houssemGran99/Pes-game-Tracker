@@ -5,6 +5,24 @@ import { fetchMatches } from '../utils/api';
 export default function MatchHistory() {
     const { actions } = useMatch();
     const [matches, setMatches] = useState([]);
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     useEffect(() => {
         fetchMatches().then(setMatches);
@@ -82,6 +100,33 @@ export default function MatchHistory() {
                         );
                     })}
                 </div>
+            )}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="animate-fade-in"
+                    style={{
+                        position: 'fixed',
+                        bottom: '2rem',
+                        right: '2rem',
+                        backgroundColor: 'var(--color-primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '50px',
+                        height: '50px',
+                        fontSize: '1.5rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        zIndex: 100,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                    title="Scroll to top"
+                >
+                    ↑
+                </button>
             )}
         </div>
     );
