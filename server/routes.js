@@ -73,24 +73,31 @@ router.get('/matches', async (req, res) => {
             }
         }
 
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+        // Check if pagination is requested
+        if (req.query.page) {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const skip = (page - 1) * limit;
 
-        const totalMatches = await Match.countDocuments(filter);
-        const matches = await Match.find(filter)
-            .sort({ date: -1 })
-            .skip(skip)
-            .limit(limit);
+            const totalMatches = await Match.countDocuments(filter);
+            const matches = await Match.find(filter)
+                .sort({ date: -1 })
+                .skip(skip)
+                .limit(limit);
 
-        const totalPages = Math.ceil(totalMatches / limit);
+            const totalPages = Math.ceil(totalMatches / limit);
 
-        res.json({
-            matches,
-            totalPages,
-            currentPage: page,
-            totalMatches
-        });
+            return res.json({
+                matches,
+                totalPages,
+                currentPage: page,
+                totalMatches
+            });
+        } else {
+            // Return all matches
+            const matches = await Match.find(filter).sort({ date: -1 });
+            return res.json(matches);
+        }
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
