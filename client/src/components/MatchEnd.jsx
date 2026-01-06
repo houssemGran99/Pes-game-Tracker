@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useMatch } from '../context/MatchContext';
 import { submitMatch } from '../utils/api';
 
 export default function MatchEnd() {
     const { state, actions } = useMatch();
     const { currentMatch } = state;
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!currentMatch) return null;
 
@@ -24,6 +26,9 @@ export default function MatchEnd() {
     }
 
     const handleSave = async () => {
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
         try {
             await submitMatch({
                 playerA,
@@ -37,6 +42,7 @@ export default function MatchEnd() {
         } catch (error) {
             console.error('Failed to save match:', error);
             alert('Failed to save match. Please try again.');
+            setIsSubmitting(false);
         }
     };
 
@@ -65,12 +71,14 @@ export default function MatchEnd() {
                     <button
                         className="btn btn-success btn-lg btn-block"
                         onClick={handleSave}
+                        disabled={isSubmitting}
                     >
-                        ✓ Save Match
+                        {isSubmitting ? 'Saving...' : '✓ Save Match'}
                     </button>
                     <button
                         className="btn btn-ghost btn-block"
                         onClick={handleDiscard}
+                        disabled={isSubmitting}
                     >
                         ✕ Discard
                     </button>
