@@ -1,10 +1,12 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import Player from './models/Player.js';
 import Match from './models/Match.js';
 
 import Tournament from './models/Tournament.js';
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 // --- Players ---
 router.get('/players', async (req, res) => {
@@ -33,34 +35,40 @@ router.post('/players', async (req, res) => {
 
 // Auth Middleware
 const requireAdmin = (req, res, next) => {
-    const secret = req.headers['x-admin-secret'];
-    if (secret !== process.env.ADMIN_SECRET) {
-        return res.status(403).json({ message: 'Unauthorized: Admin access required' });
-    }
-    next();
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) return res.status(401).json({ message: 'Unauthorized: No token provided' });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: 'Forbidden: Invalid token' });
+
+        if (user.role !== 'admin') {
+            return res.status(403).json({ message: 'Forbidden: Admin access only' });
+        }
+
+        req.user = user;
+        next();
+    });
 };
 
 // --- Auth ---
-// router.post('/auth/login', (req, res) => {
-//     const { username, password } = req.body;
-// 
-//     // Simple check against env var
-//     // Ideally this would be a hash comparison from DB
-//     if (username === 'admin' && password === process.env.ADMIN_SECRET) {
-//         return res.json({
-//             success: true,
-//             user: {
-//                 role: 'admin',
-//                 username: 'Admin',
-//                 // Return the secret so client can use it for subsequent requests
-//                 // In a real app we'd return a JWT here
-//                 secret: process.env.ADMIN_SECRET
-//             }
-//         });
-//     }
-// 
-//     return res.status(401).json({ message: 'Invalid credentials' });
-// });
+router.post('/auth/login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (username === 'admin' && password === process.env.ADMIN_SECRET) {
+        const user = { role: 'admin', username: 'Admin' };
+        const token = jwt.sign(user, JWT_SECRET, { expiresIn: '24h' });
+
+        return res.json({
+            success: true,
+            user,
+            token
+        });
+    }
+
+    return res.status(401).json({ message: 'Invalid credentials' });
+});
 
 // --- Tournaments ---
 router.get('/tournaments', async (req, res) => {

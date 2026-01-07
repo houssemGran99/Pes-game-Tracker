@@ -4,7 +4,7 @@ const apiRequest = async (url, options = {}) => {
     // Dispatch loading start
     const headers = { ...options.headers };
 
-    // Check for auth secret
+    // Check for auth token
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('api-loading', { detail: true }));
 
@@ -12,8 +12,8 @@ const apiRequest = async (url, options = {}) => {
             const userStr = localStorage.getItem('pes6_user');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                if (user && user.secret) {
-                    headers['x-admin-secret'] = user.secret;
+                if (user && user.token) {
+                    headers['Authorization'] = `Bearer ${user.token}`;
                 }
             }
         } catch (e) {
@@ -45,7 +45,7 @@ export const login = async (username, password) => {
         }
 
         const data = await res.json();
-        return data.user;
+        return { ...data.user, token: data.token };
     } catch (error) {
         console.error('Login Error:', error);
         return null;
