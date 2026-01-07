@@ -38,7 +38,7 @@ app.use(cors({
     credentials: true,
 }));
 */
-app.use(cors()); // Allow all temporarily
+//app.use(cors()); // Allow all temporarily
 app.use(express.json());
 
 // Rate Limiter
