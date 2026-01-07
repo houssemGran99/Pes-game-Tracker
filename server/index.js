@@ -23,13 +23,16 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (allowedOrigins.includes(origin) || !origin) {
+        const isAllowed = allowedOrigins.includes(origin) || !origin || origin.endsWith('.vercel.app');
+
+        if (isAllowed) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            console.error('CORS blocked origin:', origin);
+            callback(new Error('Not allowed by CORS: ' + origin));
         }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret'],
     credentials: true,
 }));
