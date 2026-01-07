@@ -41,6 +41,7 @@ app.use(cors({
 //app.use(cors()); // Allow all temporarily
 app.use(express.json());
 
+/*
 // Rate Limiter
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -52,6 +53,7 @@ const limiter = rateLimit({
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
+*/
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -63,6 +65,12 @@ app.use('/api', routes);
 
 app.get('/', (req, res) => {
     res.send('PES 6 Tracker API Running');
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error('SERVER ERROR:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
 });
 
 // Conditionally listen if running locally/directly
