@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 5000;
 app.set('trust proxy', 1);
 
 // Middleware
+/*
 const allowedOrigins = [
     'https://pes-game-tracker-client.vercel.app', // Production Client
     'http://localhost:3000', // Local Client
@@ -36,6 +37,8 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret'],
     credentials: true,
 }));
+*/
+app.use(cors()); // Allow all temporarily
 app.use(express.json());
 
 // Rate Limiter
