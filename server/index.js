@@ -32,13 +32,11 @@ app.use(cors({
             console.error('CORS blocked origin:', origin);
             callback(new Error('Not allowed by CORS: ' + origin));
         }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret'],
+    origin: true, // Reflects the request origin
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret']
 }));
-*/
-//app.use(cors()); // Allow all temporarily
 app.use(express.json());
 
 /*
