@@ -15,23 +15,7 @@ const PORT = process.env.PORT || 5000;
 app.set('trust proxy', 1);
 
 // Middleware
-/*
-const allowedOrigins = [
-    'https://pes-game-tracker-client.vercel.app', // Production Client
-    'http://localhost:3000', // Local Client
-    undefined // Allow non-browser tools (like Postman or server-to-server)
-];
-
 app.use(cors({
-    origin: (origin, callback) => {
-        const isAllowed = allowedOrigins.includes(origin) || !origin || origin.endsWith('.vercel.app');
-
-        if (isAllowed) {
-            callback(null, true);
-        } else {
-            console.error('CORS blocked origin:', origin);
-            callback(new Error('Not allowed by CORS: ' + origin));
-        }
     origin: true, // Reflects the request origin
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -39,7 +23,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-/*
 // Rate Limiter
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -51,12 +34,47 @@ const limiter = rateLimit({
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
-*/
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Connection Error:', err));
+// Database Connection Strategy for Serverless
+let cached = global.mongoose;
+if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectDB() {
+    if (cached.conn) {
+        return cached.conn;
+    }
+
+    if (!cached.promise) {
+        const opts = {
+            bufferCommands: false,
+        };
+
+        cached.promise = mongoose.connect(process.env.MONGO_URI, opts).then((mongoose) => {
+            console.log('MongoDB Connected');
+            return mongoose;
+        });
+    }
+    try {
+        cached.conn = await cached.promise;
+    } catch (e) {
+        cached.promise = null;
+        throw e;
+    }
+    return cached.conn;
+}
+
+// Ensure DB is connected before handling requests
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error('Database connection failed:', error);
+        res.status(500).json({ message: 'Database Connection Error', error: error.message });
+    }
+});
 
 // Import Routes
 app.use('/api', routes);
