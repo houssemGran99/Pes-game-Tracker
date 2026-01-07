@@ -32,6 +32,26 @@ const apiRequest = async (url, options = {}) => {
     }
 };
 
+export const login = async (username, password) => {
+    try {
+        const res = await apiRequest(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
+
+        if (!res.ok) {
+            return null;
+        }
+
+        const data = await res.json();
+        return data.user;
+    } catch (error) {
+        console.error('Login Error:', error);
+        return null;
+    }
+};
+
 export const fetchPlayers = async () => {
     try {
         const res = await apiRequest(`${API_URL}/players`, { cache: 'no-store' });

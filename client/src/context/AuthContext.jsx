@@ -1,6 +1,5 @@
-'use client';
-
 import { createContext, useContext, useState, useEffect } from 'react';
+import { login as apiLogin } from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -17,9 +16,9 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (username, password) => {
-    if (username === 'admin' && password === 'houssem99') {
-      const userObj = { role: 'admin', username: 'Admin', secret: 'houssem99' };
+  const login = async (username, password) => {
+    const userObj = await apiLogin(username, password);
+    if (userObj) {
       setUser(userObj);
       localStorage.setItem('pes6_user', JSON.stringify(userObj));
       return true;

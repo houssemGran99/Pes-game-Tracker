@@ -7,7 +7,7 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
@@ -16,7 +16,7 @@ export default function LoginScreen() {
             return;
         }
 
-        const success = login(username, password);
+        const success = await login(username, password);
         if (!success) {
             setError('Invalid username or password');
         }
