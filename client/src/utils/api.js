@@ -2,12 +2,27 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const apiRequest = async (url, options = {}) => {
     // Dispatch loading start
+    const headers = { ...options.headers };
+
+    // Check for auth secret
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('api-loading', { detail: true }));
+
+        try {
+            const userStr = localStorage.getItem('pes6_user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                if (user && user.secret) {
+                    headers['x-admin-secret'] = user.secret;
+                }
+            }
+        } catch (e) {
+            // ignore
+        }
     }
 
     try {
-        const res = await fetch(url, options);
+        const res = await fetch(url, { ...options, headers });
         return res;
     } finally {
         // Dispatch loading end

@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
 
   const login = (username, password) => {
     if (username === 'admin' && password === 'houssem99') {
-      const userObj = { role: 'admin', username: 'Admin' };
+      const userObj = { role: 'admin', username: 'Admin', secret: 'houssem99' };
       setUser(userObj);
       localStorage.setItem('pes6_user', JSON.stringify(userObj));
       return true;

@@ -31,6 +31,15 @@ router.post('/players', async (req, res) => {
     }
 });
 
+// Auth Middleware
+const requireAdmin = (req, res, next) => {
+    const secret = req.headers['x-admin-secret'];
+    if (secret !== process.env.ADMIN_SECRET) {
+        return res.status(403).json({ message: 'Unauthorized: Admin access required' });
+    }
+    next();
+};
+
 // --- Tournaments ---
 router.get('/tournaments', async (req, res) => {
     try {
@@ -41,7 +50,7 @@ router.get('/tournaments', async (req, res) => {
     }
 });
 
-router.post('/tournaments', async (req, res) => {
+router.post('/tournaments', requireAdmin, async (req, res) => {
     try {
         const newTournament = new Tournament(req.body);
         const savedTournament = await newTournament.save();
@@ -61,7 +70,7 @@ router.get('/tournaments/:id', async (req, res) => {
     }
 });
 
-router.put('/tournaments/:id', async (req, res) => {
+router.put('/tournaments/:id', requireAdmin, async (req, res) => {
     try {
         const tournament = await Tournament.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!tournament) return res.status(404).json({ message: 'Tournament not found' });
