@@ -12,7 +12,24 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+    'https://pes-game-tracker-client.vercel.app', // Production Client
+    'http://localhost:3000', // Local Client
+    undefined // Allow non-browser tools (like Postman or server-to-server)
+];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret'],
+    credentials: true,
+}));
 app.use(express.json());
 
 // Rate Limiter
