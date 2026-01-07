@@ -11,6 +11,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust Proxy (Required for Vercel/Heroku/etc. to get correct IP for rate limiting)
+app.set('trust proxy', 1);
+
 // Middleware
 const allowedOrigins = [
     'https://pes-game-tracker-client.vercel.app', // Production Client
