@@ -28,19 +28,22 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Database Connection
-app.get('/', (req, res) => {
-    res.send('PES 6 Tracker API Running');
-});
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.error('MongoDB Connection Error:', err));
 
 // Import Routes
 app.use('/api', routes);
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log('MongoDB Connected');
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
-        });
-    })
-    .catch(err => console.error('MongoDB Connection Error:', err));
+app.get('/', (req, res) => {
+    res.send('PES 6 Tracker API Running');
+});
+
+// Conditionally listen if running locally/directly
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+export default app;
