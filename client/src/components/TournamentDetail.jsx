@@ -215,7 +215,7 @@ export default function TournamentDetail() {
                 >
                     Matches
                 </button>
-                {!isCompleted && (
+                {isAdmin && !isCompleted && (
                     <button
                         className="btn btn-success"
                         onClick={() => {

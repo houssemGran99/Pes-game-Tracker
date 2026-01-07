@@ -1,4 +1,4 @@
-'use client';
+
 
 import MainApp from '../MainApp';
 

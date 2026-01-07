@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
 import { fetchTournaments, createTournament } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 import PlayerSelect from './PlayerSelect';
 
 export default function TournamentList() {
     const { actions, state } = useMatch();
+    const { isAdmin } = useAuth();
     const [tournaments, setTournaments] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
     const [newTournamentName, setNewTournamentName] = useState('');
@@ -69,9 +71,11 @@ export default function TournamentList() {
 
             {!isCreating ? (
                 <>
-                    <button className="btn btn-primary" onClick={() => setIsCreating(true)} style={{ marginBottom: '1rem', width: '100%' }}>
-                        + Create New Tournament
-                    </button>
+                    {isAdmin && (
+                        <button className="btn btn-primary" onClick={() => setIsCreating(true)} style={{ marginBottom: '1rem', width: '100%' }}>
+                            + Create New Tournament
+                        </button>
+                    )}
 
                     <div className="tournament-grid">
                         {tournaments.length === 0 ? (
