@@ -41,26 +41,26 @@ const requireAdmin = (req, res, next) => {
 };
 
 // --- Auth ---
-router.post('/auth/login', (req, res) => {
-    const { username, password } = req.body;
-
-    // Simple check against env var
-    // Ideally this would be a hash comparison from DB
-    if (username === 'admin' && password === process.env.ADMIN_SECRET) {
-        return res.json({
-            success: true,
-            user: {
-                role: 'admin',
-                username: 'Admin',
-                // Return the secret so client can use it for subsequent requests
-                // In a real app we'd return a JWT here
-                secret: process.env.ADMIN_SECRET
-            }
-        });
-    }
-
-    return res.status(401).json({ message: 'Invalid credentials' });
-});
+// router.post('/auth/login', (req, res) => {
+//     const { username, password } = req.body;
+// 
+//     // Simple check against env var
+//     // Ideally this would be a hash comparison from DB
+//     if (username === 'admin' && password === process.env.ADMIN_SECRET) {
+//         return res.json({
+//             success: true,
+//             user: {
+//                 role: 'admin',
+//                 username: 'Admin',
+//                 // Return the secret so client can use it for subsequent requests
+//                 // In a real app we'd return a JWT here
+//                 secret: process.env.ADMIN_SECRET
+//             }
+//         });
+//     }
+// 
+//     return res.status(401).json({ message: 'Invalid credentials' });
+// });
 
 // --- Tournaments ---
 router.get('/tournaments', async (req, res) => {
