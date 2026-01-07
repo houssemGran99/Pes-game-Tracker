@@ -152,7 +152,7 @@ router.get('/matches', async (req, res) => {
     }
 });
 
-router.post('/matches', async (req, res) => {
+router.post('/matches', requireAdmin, async (req, res) => {
     try {
         const newMatch = new Match(req.body);
         const savedMatch = await newMatch.save();
