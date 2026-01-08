@@ -475,8 +475,8 @@ function LocalNewMatch({ participants, playersMap, onCancel, onStart }) {
                 </button>
                 <button
                     className={`btn flex-1 py-3 px-6 rounded-xl font-bold transition-all ${isValid
-                            ? 'bg-gradient-to-br from-success to-[#00cc6a] text-bg-primary shadow-[0_0_20px_rgba(0,255,136,0.3)] hover:-translate-y-0.5'
-                            : 'bg-white/10 text-white/30 cursor-not-allowed'
+                        ? 'bg-gradient-to-br from-success to-[#00cc6a] text-bg-primary shadow-[0_0_20px_rgba(0,255,136,0.3)] hover:-translate-y-0.5'
+                        : 'bg-white/10 text-white/30 cursor-not-allowed'
                         }`}
                     disabled={!isValid}
                     onClick={() => onStart(playerA, playerB)}
@@ -497,7 +497,7 @@ function TournamentTable({ leaderboard, playersMap }) {
     };
 
     return (
-        <div className="table-container card" style={{ padding: 0, width: '100%', overflowX: 'auto' }}>
+        <div className="table-container card" style={{ padding: 0, width: '100%', maxWidth: '100vw' }}>
             <table className="league-table">
                 <thead>
                     <tr>
