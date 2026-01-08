@@ -4,6 +4,8 @@ import { fetchTournaments, createTournament } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import PlayerSelect from './PlayerSelect';
 
+import { TOURNAMENT_THEMES } from '../utils/themes';
+
 export default function TournamentList() {
     const { actions, state } = useMatch();
     const { isAdmin } = useAuth();
@@ -13,6 +15,7 @@ export default function TournamentList() {
     const [maxPoints, setMaxPoints] = useState('');
     const [participants, setParticipants] = useState([]);
     const [currentPlayer, setCurrentPlayer] = useState('');
+    const [selectedTheme, setSelectedTheme] = useState('classic');
 
     useEffect(() => {
         const loadTournaments = async () => {
@@ -34,17 +37,20 @@ export default function TournamentList() {
                 name: newTournamentName,
                 participants,
                 status: 'active',
-                maxPoints: maxPoints ? parseInt(maxPoints) : null
+                maxPoints: maxPoints ? parseInt(maxPoints) : null,
+                theme: selectedTheme
             });
             setTournaments([created, ...tournaments]);
             setIsCreating(false);
             setNewTournamentName('');
             setMaxPoints('');
             setParticipants([]);
+            setSelectedTheme('classic');
         } catch (err) {
             alert('Failed to create tournament');
         }
     };
+
 
     const handleAddParticipant = (name) => {
         if (!name.trim()) return;
@@ -81,26 +87,37 @@ export default function TournamentList() {
                         {tournaments.length === 0 ? (
                             <div className="p-4 text-center text-muted card" style={{ gridColumn: '1 / -1' }}>No tournaments found</div>
                         ) : (
-                            tournaments.map(t => (
-                                <div
-                                    key={t._id || t.id}
-                                    className={`tournament-card ${t.status === 'completed' ? 'completed' : ''}`}
-                                    onClick={() => {
-                                        actions.setTournament(t);
-                                        actions.setScreen('tournamentDetail');
-                                    }}
-                                >
-                                    <div className="tournament-card-header">
-                                        <div className="tournament-name">{t.name}</div>
-                                        {t.status === 'completed' && <span className="tournament-status">Completed</span>}
+                            tournaments.map(t => {
+                                const themeKey = t.theme || 'classic';
+                                const theme = TOURNAMENT_THEMES[themeKey] || TOURNAMENT_THEMES['classic'];
+                                const cardStyle = {
+                                    backgroundImage: theme.colors.background,
+                                    backgroundSize: theme.colors.backgroundSize || 'cover',
+                                    border: `1px solid ${theme.colors.primary}40`, // Low opacity border
+                                };
+
+                                return (
+                                    <div
+                                        key={t._id || t.id}
+                                        className={`tournament-card ${t.status === 'completed' ? 'completed' : ''}`}
+                                        style={cardStyle}
+                                        onClick={() => {
+                                            actions.setTournament(t);
+                                            actions.setScreen('tournamentDetail');
+                                        }}
+                                    >
+                                        <div className="tournament-card-header">
+                                            <div className="tournament-name" style={{ color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{t.name}</div>
+                                            {t.status === 'completed' && <span className="tournament-status">Completed</span>}
+                                        </div>
+                                        <div className="tournament-details">
+                                            <div>{t.participants.length} Participants</div>
+                                            <div style={{ marginTop: '0.25rem' }}>{new Date(t.startDate).toLocaleDateString()}</div>
+                                            {t.winner && <div style={{ marginTop: '0.5rem', color: 'var(--color-primary)' }}>🏆 {t.winner}</div>}
+                                        </div>
                                     </div>
-                                    <div className="tournament-details">
-                                        <div>{t.participants.length} Participants</div>
-                                        <div style={{ marginTop: '0.25rem' }}>{new Date(t.startDate).toLocaleDateString()}</div>
-                                        {t.winner && <div style={{ marginTop: '0.5rem', color: 'var(--color-primary)' }}>🏆 {t.winner}</div>}
-                                    </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </>
@@ -128,6 +145,35 @@ export default function TournamentList() {
                             onChange={e => setMaxPoints(e.target.value)}
                             placeholder="Points needed to win"
                         />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Tournament Theme</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.5rem' }}>
+                            {Object.entries(TOURNAMENT_THEMES).map(([key, theme]) => (
+                                <div
+                                    key={key}
+                                    onClick={() => setSelectedTheme(key)}
+                                    // Use style for preview
+                                    style={{
+                                        cursor: 'pointer',
+                                        padding: '0.5rem',
+                                        borderRadius: '8px',
+                                        border: selectedTheme === key ? `2px solid var(--color-primary)` : '2px solid transparent',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        textAlign: 'center',
+                                        opacity: selectedTheme === key ? 1 : 0.7
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '100%', height: '40px', borderRadius: '4px', marginBottom: '0.25rem',
+                                        background: theme.colors.background,
+                                        backgroundSize: theme.colors.backgroundSize || 'cover'
+                                    }}></div>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: selectedTheme === key ? 'bold' : 'normal' }}>{theme.name}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="form-group">

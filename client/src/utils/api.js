@@ -125,6 +125,14 @@ export const updateTournament = async (id, data) => {
     return await res.json();
 };
 
+export const deleteTournament = async (id) => {
+    const res = await apiRequest(`${API_URL}/tournaments/${id}`, {
+        method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete tournament');
+    return await res.json();
+};
+
 export const fetchMatches = async (tournamentId = null, page = null, limit = null, player = null) => {
     try {
         let url = `${API_URL}/matches`;

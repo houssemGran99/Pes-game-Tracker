@@ -110,6 +110,20 @@ router.put('/tournaments/:id', requireAdmin, async (req, res) => {
     }
 });
 
+router.delete('/tournaments/:id', requireAdmin, async (req, res) => {
+    try {
+        const tournament = await Tournament.findByIdAndDelete(req.params.id);
+        if (!tournament) return res.status(404).json({ message: 'Tournament not found' });
+
+        // Optional: Delete associated matches?
+        // await Match.deleteMany({ tournamentId: req.params.id });
+
+        res.json({ message: 'Tournament deleted' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // --- Matches ---
 router.get('/matches', async (req, res) => {
     try {

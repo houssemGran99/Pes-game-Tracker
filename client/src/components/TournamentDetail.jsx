@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
-import { fetchMatches, updateTournament } from '../utils/api';
+import { fetchMatches, updateTournament, deleteTournament } from '../utils/api';
 import { calculateOverallStats, calculateLeaderboard } from '../utils/stats';
 import { useAuth } from '../context/AuthContext';
 import PlayerSelect from './PlayerSelect';
+import { TOURNAMENT_THEMES } from '../utils/themes';
 
 export default function TournamentDetail() {
     const { state, actions } = useMatch();
@@ -19,11 +20,13 @@ export default function TournamentDetail() {
     const [editMaxPoints, setEditMaxPoints] = useState('');
     const [editParticipants, setEditParticipants] = useState([]);
     const [currentPlayer, setCurrentPlayer] = useState('');
+    const [editTheme, setEditTheme] = useState('classic');
 
     const startEditing = () => {
         setEditName(currentTournament.name);
         setEditMaxPoints(currentTournament.maxPoints || '');
         setEditParticipants([...currentTournament.participants]);
+        setEditTheme(currentTournament.theme || 'classic');
         setIsEditing(true);
     };
 
@@ -37,7 +40,8 @@ export default function TournamentDetail() {
             await updateTournament(currentTournament._id, {
                 name: editName,
                 maxPoints: editMaxPoints ? parseInt(editMaxPoints) : null,
-                participants: editParticipants
+                participants: editParticipants,
+                theme: editTheme
             });
 
             // Update local state
@@ -45,7 +49,8 @@ export default function TournamentDetail() {
                 ...currentTournament,
                 name: editName,
                 maxPoints: editMaxPoints ? parseInt(editMaxPoints) : null,
-                participants: editParticipants
+                participants: editParticipants,
+                theme: editTheme
             });
             setIsEditing(false);
         } catch (err) {
@@ -82,7 +87,6 @@ export default function TournamentDetail() {
                     status: 'completed',
                     winner: winner.name
                 });
-                // alert(`🏆 ${winner.name} has won the tournament!`); // Removed per user request
             } catch (err) {
                 console.error('Failed to update tournament status', err);
             }
@@ -124,6 +128,18 @@ export default function TournamentDetail() {
 
     if (!currentTournament) return null;
 
+    // Get theme
+    const themeKey = currentTournament?.theme || 'classic';
+    const theme = TOURNAMENT_THEMES[themeKey] || TOURNAMENT_THEMES['classic'];
+
+    const themeStyles = {
+        '--color-primary': theme.colors.primary,
+        '--color-secondary': theme.colors.secondary,
+        backgroundImage: theme.colors.background,
+        backgroundSize: theme.colors.backgroundSize || 'cover',
+        '--gradient-card': theme.colors.card === 'transparent' ? 'none' : theme.colors.card.includes('gradient') ? theme.colors.card : `linear-gradient(145deg, ${theme.colors.card}, ${theme.colors.card})`,
+    };
+
     const isCompleted = currentTournament.status === 'completed';
 
     if (isEditing) {
@@ -138,6 +154,33 @@ export default function TournamentDetail() {
                     <div className="form-group">
                         <label>Target Points (Optional)</label>
                         <input className="form-input" type="number" value={editMaxPoints} onChange={e => setEditMaxPoints(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                        <label>Tournament Theme</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.5rem' }}>
+                            {Object.entries(TOURNAMENT_THEMES).map(([key, theme]) => (
+                                <div
+                                    key={key}
+                                    onClick={() => setEditTheme(key)}
+                                    style={{
+                                        cursor: 'pointer',
+                                        padding: '0.5rem',
+                                        borderRadius: '8px',
+                                        border: editTheme === key ? `2px solid var(--color-primary)` : '2px solid transparent',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        textAlign: 'center',
+                                        opacity: editTheme === key ? 1 : 0.7
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '100%', height: '40px', borderRadius: '4px', marginBottom: '0.25rem',
+                                        background: theme.colors.background,
+                                        backgroundSize: theme.colors.backgroundSize || 'cover'
+                                    }}></div>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: editTheme === key ? 'bold' : 'normal' }}>{theme.name}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     <div className="form-group">
                         <label>Participants</label>
@@ -169,8 +212,20 @@ export default function TournamentDetail() {
         );
     }
 
+    const handleDeleteTournament = async () => {
+        if (confirm(`Are you sure you want to delete "${currentTournament.name}"? This cannot be undone.`)) {
+            try {
+                await deleteTournament(currentTournament._id);
+                actions.setTournament(null);
+                actions.setScreen('tournamentList');
+            } catch (err) {
+                alert('Failed to delete tournament');
+            }
+        }
+    };
+
     return (
-        <div className="tournament-detail-screen container animate-fade-in">
+        <div className="tournament-detail-screen container animate-fade-in" style={themeStyles}>
             <div className="header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <button className="back-btn" onClick={() => {
                     actions.setTournament(null);
@@ -180,8 +235,13 @@ export default function TournamentDetail() {
                 </button>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <h2 className="section-title" style={{ margin: 0, fontSize: '1.2rem' }}>{currentTournament.name}</h2>
-                    {isAdmin && !isCompleted && (
-                        <button onClick={startEditing} className="btn-sm" style={{ background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
+                    {isAdmin && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            {!isCompleted && (
+                                <button onClick={startEditing} className="btn-sm" style={{ background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
+                            )}
+                            <button onClick={handleDeleteTournament} className="btn-sm" style={{ background: 'var(--color-danger)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+                        </div>
                     )}
                 </div>
             </div>
