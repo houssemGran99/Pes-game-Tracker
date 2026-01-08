@@ -146,12 +146,19 @@ export default function TournamentDetail() {
     useEffect(() => {
         if (theme) {
             const root = document.documentElement;
+            const body = document.body;
+
             root.style.setProperty('--color-primary', theme.colors.primary);
             root.style.setProperty('--color-secondary', theme.colors.secondary);
-            // Update body background
-            document.body.style.background = theme.colors.background;
-            document.body.style.backgroundSize = theme.colors.backgroundSize || 'cover';
-            document.body.style.backgroundAttachment = 'fixed';
+
+            // Update body background to cover entire viewport
+            body.style.background = theme.colors.background;
+            body.style.backgroundSize = theme.colors.backgroundSize || 'cover';
+            body.style.backgroundAttachment = 'fixed';
+            body.style.backgroundPosition = 'center';
+            body.style.backgroundRepeat = 'no-repeat';
+            body.style.minHeight = '100vh';
+            body.style.width = '100%';
 
             // Update card gradient variable
             const cardGradient = theme.colors.card === 'transparent' ? 'none' : theme.colors.card.includes('gradient') ? theme.colors.card : `linear-gradient(145deg, ${theme.colors.card}, ${theme.colors.card})`;
@@ -161,12 +168,18 @@ export default function TournamentDetail() {
         return () => {
             // Cleanup / Reset
             const root = document.documentElement;
+            const body = document.body;
+
             root.style.removeProperty('--color-primary');
             root.style.removeProperty('--color-secondary');
             root.style.removeProperty('--gradient-card');
-            document.body.style.background = '';
-            document.body.style.backgroundSize = '';
-            document.body.style.backgroundAttachment = '';
+            body.style.background = '';
+            body.style.backgroundSize = '';
+            body.style.backgroundAttachment = '';
+            body.style.backgroundPosition = '';
+            body.style.backgroundRepeat = '';
+            body.style.minHeight = '';
+            body.style.width = '';
         };
     }, [theme]);
 
