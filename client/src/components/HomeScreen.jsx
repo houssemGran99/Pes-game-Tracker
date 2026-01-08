@@ -1,6 +1,8 @@
 import { useMatch } from '../context/MatchContext';
 import { useAuth } from '../context/AuthContext';
-import ThreeLogo from './ThreeLogo';
+import dynamic from 'next/dynamic';
+
+const ThreeLogo = dynamic(() => import('./ThreeLogo'), { ssr: false });
 
 export default function HomeScreen() {
     const { actions } = useMatch();

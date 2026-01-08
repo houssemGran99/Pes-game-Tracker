@@ -60,8 +60,6 @@ export default function ThreeLogo() {
             footballGroup.add(patch);
         }
 
-        // ... Football Construction (previous code) ...
-
         // --- Fire Effect ---
         // Generate a fire texture procedurally
         const getFireTexture = () => {
@@ -136,10 +134,6 @@ export default function ThreeLogo() {
         const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
         dirLight.position.set(5, 10, 7);
         scene.add(dirLight);
-
-        // Remove rim light, create cleaner look
-        // const rimLight = new THREE.PointLight(0x00d4ff, 0.5);
-        // scene.add(rimLight);
 
         camera.position.z = 8; // Pull back slightly to allow movement
 
