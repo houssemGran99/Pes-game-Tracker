@@ -106,7 +106,7 @@ body {
 
 .container {
   width: 100%;
-  max-width: 480px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-md);
   flex: 1;
@@ -499,6 +499,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   padding: var(--space-xl) var(--space-md);
 }
 
@@ -517,10 +518,23 @@ body {
 }
 
 .home-nav {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--space-md);
   margin-top: var(--space-xl);
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .home-nav {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-nav {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 .nav-btn {
@@ -571,6 +585,36 @@ body {
 /* New Match Screen */
 .new-match-screen {
   padding-top: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* Take full height of parent container */
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .new-match-screen {
+    justify-content: center;
+    align-items: center;
+    padding-top: 0;
+  }
+
+  .new-match-screen form {
+    width: 100%;
+    max-width: 800px;
+    min-width: 500px;
+  }
+
+  .new-match-screen .card {
+    padding: var(--space-2xl);
+    /* Increase padding for bigger look */
+  }
+
+  .new-match-screen .back-btn {
+    position: absolute;
+    top: var(--space-xl);
+    left: var(--space-xl);
+  }
 }
 
 .back-btn {
@@ -789,9 +833,21 @@ body {
 }
 
 .match-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .match-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .match-list {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 .match-card {
@@ -864,6 +920,12 @@ body {
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-md);
   margin-bottom: var(--space-xl);
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .stat-card {
@@ -1006,6 +1068,20 @@ body {
   border-radius: var(--radius-lg) !important;
   -webkit-overflow-scrolling: touch;
   /* Smooth scrolling on iOS */
+}
+
+@media (min-width: 1024px) {
+  .table-container {
+    overflow-x: visible;
+    /* No scroll needed on desktop usually */
+  }
+
+  /* Make table cells utilize space better on large screens */
+  .league-table th,
+  .league-table td {
+    padding: var(--space-lg) var(--space-md);
+    font-size: var(--font-size-md);
+  }
 }
 
 .league-table {

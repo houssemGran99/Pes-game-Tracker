@@ -4,12 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { fetchMatches, deleteMatch, updateMatch } from '../utils/api';
 
 export default function MatchHistory() {
-    const { actions } = useMatch();
+    const { actions, state } = useMatch();
     const { isAdmin } = useAuth();
     const [matches, setMatches] = useState([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [showScrollTop, setShowScrollTop] = useState(false);
+
+    const filterPlayer = state.screenParams?.player || null;
 
     // Editing state
     const [editingMatch, setEditingMatch] = useState(null); // { _id, scoreA, scoreB }
@@ -32,7 +34,8 @@ export default function MatchHistory() {
     };
 
     const loadMatches = async () => {
-        const data = await fetchMatches(null, page, 10);
+        // fetchMatches(tournamentId, page, limit, player)
+        const data = await fetchMatches(null, page, 10, filterPlayer);
         if (data.matches) {
             setMatches(data.matches);
             setTotalPages(data.totalPages);
@@ -44,7 +47,7 @@ export default function MatchHistory() {
 
     useEffect(() => {
         loadMatches();
-    }, [page]);
+    }, [page, filterPlayer]);
 
     const handleDelete = async (id) => {
         if (confirm('Are you sure you want to delete this match? This cannot be undone.')) {
@@ -97,7 +100,13 @@ export default function MatchHistory() {
     };
 
     const handlePlayerClick = (playerName) => {
-        actions.setScreen('stats', { selectedPlayer: playerName });
+        actions.setScreen('history', { player: playerName });
+        setPage(1); // Reset to first page
+    };
+
+    const clearFilter = () => {
+        actions.setScreen('history', null);
+        setPage(1);
     };
 
     return (
@@ -107,6 +116,21 @@ export default function MatchHistory() {
             </button>
 
             <h2 className="section-title">Match History</h2>
+
+            {filterPlayer && (
+                <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                    <span style={{ color: 'var(--color-text-secondary)', marginRight: '0.5rem' }}>
+                        Filtering by: <strong>{filterPlayer}</strong>
+                    </span>
+                    <button
+                        onClick={clearFilter}
+                        className="btn-sm btn-ghost"
+                        style={{ padding: '2px 8px', fontSize: '0.8rem' }}
+                    >
+                        Clear
+                    </button>
+                </div>
+            )}
 
             {matches.length === 0 ? (
                 <div className="empty-state">

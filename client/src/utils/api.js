@@ -125,7 +125,7 @@ export const updateTournament = async (id, data) => {
     return await res.json();
 };
 
-export const fetchMatches = async (tournamentId = null, page = null, limit = null) => {
+export const fetchMatches = async (tournamentId = null, page = null, limit = null, player = null) => {
     try {
         let url = `${API_URL}/matches`;
         const params = new URLSearchParams();
@@ -133,6 +133,7 @@ export const fetchMatches = async (tournamentId = null, page = null, limit = nul
         if (tournamentId) params.append('tournamentId', tournamentId);
         if (page) params.append('page', page);
         if (limit) params.append('limit', limit);
+        if (player) params.append('player', player);
 
         const queryString = params.toString();
         if (queryString) url += `?${queryString}`;

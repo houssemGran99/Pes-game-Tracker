@@ -122,6 +122,14 @@ router.get('/matches', async (req, res) => {
             }
         }
 
+        if (req.query.player) {
+            const playerRegex = new RegExp(req.query.player, 'i'); // Case-insensitive
+            filter.$or = [
+                { playerA: playerRegex },
+                { playerB: playerRegex }
+            ];
+        }
+
         // Check if pagination is requested
         if (req.query.page) {
             const page = parseInt(req.query.page) || 1;

@@ -18,6 +18,14 @@ function MainApp() {
   const { state } = useMatch();
   const { user, loading } = useAuth();
 
+  const [isGlobalLoading, setIsGlobalLoading] = useState(false);
+
+  useEffect(() => {
+    const handleLoading = (e) => setIsGlobalLoading(e.detail);
+    window.addEventListener('api-loading', handleLoading);
+    return () => window.removeEventListener('api-loading', handleLoading);
+  }, []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -29,14 +37,6 @@ function MainApp() {
   if (!user) {
     return <LoginScreen />;
   }
-
-  const [isGlobalLoading, setIsGlobalLoading] = useState(false);
-
-  useEffect(() => {
-    const handleLoading = (e) => setIsGlobalLoading(e.detail);
-    window.addEventListener('api-loading', handleLoading);
-    return () => window.removeEventListener('api-loading', handleLoading);
-  }, []);
 
   const renderScreen = () => {
     switch (state.screen) {

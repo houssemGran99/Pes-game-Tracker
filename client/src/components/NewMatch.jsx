@@ -24,7 +24,7 @@ export default function NewMatch() {
     const isValid = playerA.trim() && playerB.trim() && playerA !== playerB;
 
     return (
-        <div className="new-match-screen container animate-fade-in">
+        <div className="new-match-screen animate-fade-in">
             <button className="back-btn" onClick={() => actions.setScreen('home')}>
                 ← Back to Home
             </button>
