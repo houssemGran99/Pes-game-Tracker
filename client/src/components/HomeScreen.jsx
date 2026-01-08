@@ -26,6 +26,17 @@ export default function HomeScreen() {
                     </button>
                 )}
 
+                {isAdmin && (
+                    <button className="nav-btn" onClick={() => actions.setScreen('playerManagement')}>
+                        <span className="nav-btn-icon">👥</span>
+                        <div className="nav-btn-text">
+                            <div className="nav-btn-title">Manage Players</div>
+                            <div className="nav-btn-desc">Edit names & avatars</div>
+                        </div>
+                        <span>→</span>
+                    </button>
+                )}
+
 
 
                 <button className="nav-btn" onClick={() => actions.setScreen('leagueTable')}>

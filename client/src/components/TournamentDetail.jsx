@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
-import { fetchMatches, updateTournament, deleteTournament } from '../utils/api';
+import { fetchMatches, updateTournament, deleteTournament, fetchPlayers } from '../utils/api';
 import { calculateOverallStats, calculateLeaderboard } from '../utils/stats';
 import { useAuth } from '../context/AuthContext';
 import PlayerSelect from './PlayerSelect';
@@ -12,6 +12,7 @@ export default function TournamentDetail() {
     const { currentTournament } = state;
     const [matches, setMatches] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
+    const [playersMap, setPlayersMap] = useState({});
     const [view, setView] = useState('table'); // 'table', 'matches' or 'addMatch'
 
     // Edit State
@@ -96,10 +97,19 @@ export default function TournamentDetail() {
     useEffect(() => {
         if (!currentTournament) return;
         const loadData = async () => {
-            const data = await fetchMatches(currentTournament._id);
-            setMatches(data);
+            const [matchesData, playersData] = await Promise.all([
+                fetchMatches(currentTournament._id),
+                fetchPlayers()
+            ]);
+            setMatches(matchesData);
 
-            let lb = calculateLeaderboard(data);
+            const pMap = {};
+            if (Array.isArray(playersData)) {
+                playersData.forEach(p => pMap[p.name] = p);
+            }
+            setPlayersMap(pMap);
+
+            let lb = calculateLeaderboard(matchesData);
 
             const participantNames = currentTournament.participants || [];
             const lbNames = new Set(lb.map(p => p.name));
@@ -310,6 +320,7 @@ export default function TournamentDetail() {
             {view === 'addMatch' && !isCompleted && (
                 <LocalNewMatch
                     participants={currentTournament.participants}
+                    playersMap={playersMap}
                     onCancel={() => setView('table')}
                     onStart={(pA, pB) => actions.startMatch({ playerA: pA, playerB: pB, tournamentId: currentTournament._id })}
                 />
@@ -318,7 +329,7 @@ export default function TournamentDetail() {
             {view === 'table' && (
                 <div className="tournament-table">
                     {/* Reuse table rendering logic */}
-                    <TournamentTable leaderboard={leaderboard} />
+                    <TournamentTable leaderboard={leaderboard} playersMap={playersMap} />
                 </div>
             )}
 
@@ -361,32 +372,35 @@ export default function TournamentDetail() {
     );
 }
 
-function LocalNewMatch({ participants, onCancel, onStart }) {
+function LocalNewMatch({ participants, playersMap, onCancel, onStart }) {
     const [playerA, setPlayerA] = useState('');
     const [playerB, setPlayerB] = useState('');
 
-    // Simple native select for now since participants are limited
     const safeParticipants = participants || [];
 
     return (
         <div className="card animate-fade-in">
             <h3>New Tournament Match</h3>
             <div className="form-group">
-                <label>Home Team</label>
-                <select className="form-input" value={playerA} onChange={e => setPlayerA(e.target.value)}>
-                    <option value="">Select Player...</option>
-                    {safeParticipants.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <PlayerSelect
+                    label="Home Team"
+                    value={playerA}
+                    onChange={setPlayerA}
+                    players={safeParticipants}
+                    playerDetailsMap={playersMap}
+                />
             </div>
 
             <div className="vs-divider my-2">VS</div>
 
             <div className="form-group">
-                <label>Away Team</label>
-                <select className="form-input" value={playerB} onChange={e => setPlayerB(e.target.value)}>
-                    <option value="">Select Player...</option>
-                    {safeParticipants.filter(p => p !== playerA).map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <PlayerSelect
+                    label="Away Team"
+                    value={playerB}
+                    onChange={setPlayerB}
+                    players={safeParticipants.filter(p => p !== playerA)}
+                    playerDetailsMap={playersMap}
+                />
             </div>
 
             <div className="form-actions" style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
@@ -404,7 +418,7 @@ function LocalNewMatch({ participants, onCancel, onStart }) {
     );
 }
 
-function TournamentTable({ leaderboard }) {
+function TournamentTable({ leaderboard, playersMap }) {
     const getRankClass = (index) => {
         if (index === 0) return 'gold';
         if (index === 1) return 'silver';
@@ -431,37 +445,45 @@ function TournamentTable({ leaderboard }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {leaderboard.map((player, index) => (
-                        <tr key={player.name} style={{ cursor: 'default' }}>
-                            <td className="text-left">
-                                <span className={`leaderboard-rank ${getRankClass(index)}`}>
-                                    {index + 1}
-                                </span>
-                            </td>
-                            <td className="team-cell">{player.name}</td>
-                            <td>{player.matches}</td>
-                            <td style={{ color: 'var(--color-success)' }}>{player.wins}</td>
-                            <td style={{ color: 'var(--color-warning)' }}>{player.draws}</td>
-                            <td style={{ color: 'var(--color-danger)' }}>{player.losses}</td>
-                            <td>{player.goalsFor}</td>
-                            <td>{player.goalsAgainst}</td>
-                            <td>
-                                <span style={{ color: player.goalDifference > 0 ? 'var(--color-success)' : player.goalDifference < 0 ? 'var(--color-danger)' : 'inherit' }}>
-                                    {player.goalDifference > 0 ? '+' : ''}{player.goalDifference}
-                                </span>
-                            </td>
-                            <td className="points-cell">{player.points}</td>
-                            <td>
-                                <div className="form-badges">
-                                    {player.form && player.form.map((result, i) => (
-                                        <div key={i} className={`form-badge ${result === 'W' ? 'win' : result === 'D' ? 'draw' : 'loss'}`}>
-                                            {result}
-                                        </div>
-                                    ))}
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
+                    {leaderboard.map((player, index) => {
+                        const playerData = playersMap ? playersMap[player.name] : null;
+                        return (
+                            <tr key={player.name} style={{ cursor: 'default' }}>
+                                <td className="text-left">
+                                    <span className={`leaderboard-rank ${getRankClass(index)}`}>
+                                        {index + 1}
+                                    </span>
+                                </td>
+                                <td className="team-cell">
+                                    {playerData && playerData.avatarUrl && (
+                                        <img src={playerData.avatarUrl} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                                    )}
+                                    {player.name}
+                                </td>
+                                <td>{player.matches}</td>
+                                <td style={{ color: 'var(--color-success)' }}>{player.wins}</td>
+                                <td style={{ color: 'var(--color-warning)' }}>{player.draws}</td>
+                                <td style={{ color: 'var(--color-danger)' }}>{player.losses}</td>
+                                <td>{player.goalsFor}</td>
+                                <td>{player.goalsAgainst}</td>
+                                <td>
+                                    <span style={{ color: player.goalDifference > 0 ? 'var(--color-success)' : player.goalDifference < 0 ? 'var(--color-danger)' : 'inherit' }}>
+                                        {player.goalDifference > 0 ? '+' : ''}{player.goalDifference}
+                                    </span>
+                                </td>
+                                <td className="points-cell">{player.points}</td>
+                                <td>
+                                    <div className="form-badges">
+                                        {player.form && player.form.map((result, i) => (
+                                            <div key={i} className={`form-badge ${result === 'W' ? 'win' : result === 'D' ? 'draw' : 'loss'}`}>
+                                                {result}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </td>
+                            </tr>
+                        )
+                    })}
                 </tbody>
             </table>
         </div>

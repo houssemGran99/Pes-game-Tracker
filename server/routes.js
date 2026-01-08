@@ -9,6 +9,25 @@ import Tournament from './models/Tournament.js';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
+// Auth Middleware
+const requireAdmin = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) return res.status(401).json({ message: 'Unauthorized: No token provided' });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: 'Forbidden: Invalid token' });
+
+        if (user.role !== 'admin') {
+            return res.status(403).json({ message: 'Forbidden: Admin access only' });
+        }
+
+        req.user = user;
+        next();
+    });
+};
+
 // --- Players ---
 router.get('/players', async (req, res) => {
     try {
@@ -20,15 +39,45 @@ router.get('/players', async (req, res) => {
 });
 
 router.put('/players/:name', requireAdmin, async (req, res) => {
+    const oldName = req.params.name;
+    const { name: newName, avatarUrl } = req.body;
+
     try {
-        const { avatarUrl } = req.body;
-        const player = await Player.findOneAndUpdate(
-            { name: req.params.name },
-            { $set: { avatarUrl } },
-            { new: true, upsert: true }
-        );
+        const player = await Player.findOne({ name: oldName });
+        if (!player) return res.status(404).json({ message: 'Player not found' });
+
+        // Handle Name Change
+        if (newName && newName !== oldName) {
+            // Check if new name exists
+            const existing = await Player.findOne({ name: newName });
+            if (existing) return res.status(400).json({ message: 'Player name already taken' });
+
+            player.name = newName;
+
+            // Cascade update matches
+            await Match.updateMany({ playerA: oldName }, { playerA: newName });
+            await Match.updateMany({ playerB: oldName }, { playerB: newName });
+
+            // Cascade update tournaments
+            await Tournament.updateMany(
+                { participants: oldName },
+                { $set: { "participants.$": newName } }
+            );
+            await Tournament.updateMany(
+                { winner: oldName },
+                { winner: newName }
+            );
+        }
+
+        // Handle Avatar Update
+        if (avatarUrl !== undefined) {
+            player.avatarUrl = avatarUrl;
+        }
+
+        await player.save();
         res.json(player);
     } catch (err) {
+        console.error('Update player error:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -46,6 +95,7 @@ router.post('/upload', requireAdmin, async (req, res) => {
 
         const blob = await put(filename, buffer, {
             access: 'public',
+            token: process.env.pes_READ_WRITE_TOKEN,
         });
 
         res.json(blob);
@@ -70,24 +120,7 @@ router.post('/players', async (req, res) => {
     }
 });
 
-// Auth Middleware
-const requireAdmin = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-    if (!token) return res.status(401).json({ message: 'Unauthorized: No token provided' });
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: 'Forbidden: Invalid token' });
-
-        if (user.role !== 'admin') {
-            return res.status(403).json({ message: 'Forbidden: Admin access only' });
-        }
-
-        req.user = user;
-        next();
-    });
-};
 
 // --- Auth ---
 router.post('/auth/login', (req, res) => {

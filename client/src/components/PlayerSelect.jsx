@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-export default function PlayerSelect({ label, value, onChange, players, onAddPlayer }) {
+export default function PlayerSelect({ label, value, onChange, players, onAddPlayer, playerDetailsMap }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [newPlayerName, setNewPlayerName] = useState('');
@@ -65,8 +65,15 @@ export default function PlayerSelect({ label, value, onChange, players, onAddPla
                         borderColor: isOpen ? 'var(--color-primary)' : 'rgba(255,255,255,0.1)'
                     }}
                 >
-                    <span style={{ color: value ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}>
-                        {value || "Select a player..."}
+                    <span style={{ color: value ? 'var(--color-text-primary)' : 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {value ? (
+                            <>
+                                {playerDetailsMap && playerDetailsMap[value] && playerDetailsMap[value].avatarUrl && (
+                                    <img src={playerDetailsMap[value].avatarUrl} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                                )}
+                                {value}
+                            </>
+                        ) : "Select a player..."}
                     </span>
                     <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>▼</span>
                 </div>
@@ -106,7 +113,20 @@ export default function PlayerSelect({ label, value, onChange, players, onAddPla
                                                 onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
                                                 onMouseLeave={(e) => e.target.style.background = 'transparent'}
                                             >
-                                                {player}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    {playerDetailsMap && playerDetailsMap[player] && playerDetailsMap[player].avatarUrl ? (
+                                                        <img
+                                                            src={playerDetailsMap[player].avatarUrl}
+                                                            alt=""
+                                                            style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
+                                                        />
+                                                    ) : (
+                                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>
+                                                            {player.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                    {player}
+                                                </div>
                                             </div>
                                         ))
                                     ) : (

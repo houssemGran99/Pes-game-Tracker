@@ -13,11 +13,11 @@ import Statistics from './components/Statistics';
 import LeagueTable from './components/LeagueTable';
 import TournamentList from './components/TournamentList';
 import TournamentDetail from './components/TournamentDetail';
+import PlayerManagement from './components/PlayerManagement';
 
 function MainApp() {
   const { state } = useMatch();
   const { user, loading } = useAuth();
-
   const [isGlobalLoading, setIsGlobalLoading] = useState(false);
 
   useEffect(() => {
@@ -37,7 +37,6 @@ function MainApp() {
   if (!user) {
     return <LoginScreen />;
   }
-
   const renderScreen = () => {
     switch (state.screen) {
       case 'home':
@@ -58,6 +57,8 @@ function MainApp() {
         return <TournamentList />;
       case 'tournamentDetail':
         return <TournamentDetail />;
+      case 'playerManagement':
+        return <PlayerManagement />;
       default:
         return <HomeScreen />;
     }

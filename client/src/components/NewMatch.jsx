@@ -1,11 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMatch } from '../context/MatchContext';
+import { fetchPlayers } from '../utils/api';
 import PlayerSelect from './PlayerSelect';
 
 export default function NewMatch() {
     const { state, actions } = useMatch();
     const [playerA, setPlayerA] = useState('');
     const [playerB, setPlayerB] = useState('');
+    const [playersMap, setPlayersMap] = useState({});
+
+    useEffect(() => {
+        const loadPlayers = async () => {
+            try {
+                const data = await fetchPlayers();
+                const map = {};
+                if (Array.isArray(data)) {
+                    data.forEach(p => map[p.name] = p);
+                }
+                setPlayersMap(map);
+            } catch (err) {
+                console.error("Failed to load players details", err);
+            }
+        };
+        loadPlayers();
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -39,6 +57,7 @@ export default function NewMatch() {
                         onChange={setPlayerA}
                         players={state.players}
                         onAddPlayer={handleAddPlayer}
+                        playerDetailsMap={playersMap}
                     />
 
                     <div className="vs-divider">
@@ -53,6 +72,7 @@ export default function NewMatch() {
                         onChange={setPlayerB}
                         players={state.players.filter(p => p !== playerA)} // Optional: Filter out selected P1
                         onAddPlayer={handleAddPlayer}
+                        playerDetailsMap={playersMap}
                     />
                 </div>
 
