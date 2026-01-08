@@ -158,7 +158,13 @@ export default function TournamentDetail() {
             body.style.backgroundPosition = 'center';
             body.style.backgroundRepeat = 'no-repeat';
             body.style.minHeight = '100vh';
+            body.style.minHeight = '100dvh'; // Dynamic viewport height for mobile
             body.style.width = '100%';
+
+            // Ensure html element also covers full viewport
+            root.style.minHeight = '100vh';
+            root.style.minHeight = '100dvh';
+            root.style.width = '100%';
 
             // Update card gradient variable
             const cardGradient = theme.colors.card === 'transparent' ? 'none' : theme.colors.card.includes('gradient') ? theme.colors.card : `linear-gradient(145deg, ${theme.colors.card}, ${theme.colors.card})`;
@@ -180,6 +186,8 @@ export default function TournamentDetail() {
             body.style.backgroundRepeat = '';
             body.style.minHeight = '';
             body.style.width = '';
+            root.style.minHeight = '';
+            root.style.width = '';
         };
     }, [theme]);
 
