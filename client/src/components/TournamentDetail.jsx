@@ -398,41 +398,90 @@ function LocalNewMatch({ participants, playersMap, onCancel, onStart }) {
     const [playerB, setPlayerB] = useState('');
 
     const safeParticipants = participants || [];
+    const playerAData = playersMap[playerA];
+    const playerBData = playersMap[playerB];
+
+    const isValid = playerA && playerB && playerA !== playerB;
 
     return (
-        <div className="card animate-fade-in">
-            <h3>New Tournament Match</h3>
-            <div className="form-group">
-                <PlayerSelect
-                    label="Home Team"
-                    value={playerA}
-                    onChange={setPlayerA}
-                    players={safeParticipants}
-                    playerDetailsMap={playersMap}
-                />
+        <div className="card new-match-card animate-fade-in p-8 bg-bg-card/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-md max-w-4xl mx-auto">
+            <h3 className="section-title text-center mb-8 text-2xl font-bold">New Tournament Match</h3>
+
+            <div className="new-match-layout grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-8 items-start mb-8">
+                {/* Home Team */}
+                <div className="team-section flex flex-col items-center gap-4">
+                    <div className="team-label text-xs font-semibold tracking-widest text-white/70 uppercase">HOME TEAM</div>
+                    <div className="team-avatar-container w-32 h-32 relative">
+                        {playerAData && playerAData.avatarUrl ? (
+                            <img src={playerAData.avatarUrl} alt={playerA} className="team-avatar w-full h-full rounded-full object-cover border-4 border-primary shadow-[0_0_20px_rgba(0,212,255,0.2)]" />
+                        ) : (
+                            <div className="team-avatar-placeholder w-full h-full rounded-full border-4 border-dashed border-white/20 flex items-center justify-center bg-white/5 text-5xl text-white/30 font-light">
+                                <span>?</span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="team-select-wrapper w-full max-w-[250px]">
+                        <PlayerSelect
+                            label=""
+                            value={playerA}
+                            onChange={setPlayerA}
+                            players={safeParticipants}
+                            playerDetailsMap={playersMap}
+                        />
+                    </div>
+                </div>
+
+                {/* VS Divider */}
+                <div className="vs-section flex flex-col items-center justify-center gap-2 pt-12 md:pt-12">
+                    <div className="vs-icon w-14 h-14 rounded-full bg-gradient-to-br from-success to-[#00cc6a] flex items-center justify-center text-white shadow-[0_4px_12px_rgba(0,255,136,0.3)]">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 7L9.00004 18L3.99994 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M20 7L9.00004 18L3.99994 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="translate(0, 0) scale(-1, 1) translate(-24, 0)" />
+                        </svg>
+                    </div>
+                    <div className="vs-text-large text-2xl font-bold text-white mt-2">VS</div>
+                </div>
+
+                {/* Away Team */}
+                <div className="team-section flex flex-col items-center gap-4">
+                    <div className="team-label text-xs font-semibold tracking-widest text-white/70 uppercase">AWAY TEAM</div>
+                    <div className="team-avatar-container w-32 h-32 relative">
+                        {playerBData && playerBData.avatarUrl ? (
+                            <img src={playerBData.avatarUrl} alt={playerB} className="team-avatar w-full h-full rounded-full object-cover border-4 border-secondary shadow-[0_0_20px_rgba(255,107,53,0.2)]" />
+                        ) : (
+                            <div className="team-avatar-placeholder w-full h-full rounded-full border-4 border-dashed border-white/20 flex items-center justify-center bg-white/5 text-5xl text-white/30 font-light">
+                                <span>?</span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="team-select-wrapper w-full max-w-[250px]">
+                        <PlayerSelect
+                            label=""
+                            value={playerB}
+                            onChange={setPlayerB}
+                            players={safeParticipants.filter(p => p !== playerA)}
+                            playerDetailsMap={playersMap}
+                        />
+                    </div>
+                </div>
             </div>
 
-            <div className="vs-divider my-2">VS</div>
-
-            <div className="form-group">
-                <PlayerSelect
-                    label="Away Team"
-                    value={playerB}
-                    onChange={setPlayerB}
-                    players={safeParticipants.filter(p => p !== playerA)}
-                    playerDetailsMap={playersMap}
-                />
-            </div>
-
-            <div className="form-actions" style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button className="btn btn-ghost" onClick={onCancel} style={{ flex: 1 }}>Cancel</button>
+            <div className="form-actions flex gap-4 mt-8 justify-center max-w-lg mx-auto">
                 <button
-                    className="btn btn-primary"
-                    disabled={!playerA || !playerB}
-                    onClick={() => onStart(playerA, playerB)}
-                    style={{ flex: 1 }}
+                    className="btn btn-ghost flex-1 py-3 px-6 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors"
+                    onClick={onCancel}
                 >
-                    Start Game
+                    Cancel
+                </button>
+                <button
+                    className={`btn flex-1 py-3 px-6 rounded-xl font-bold transition-all ${isValid
+                            ? 'bg-gradient-to-br from-success to-[#00cc6a] text-bg-primary shadow-[0_0_20px_rgba(0,255,136,0.3)] hover:-translate-y-0.5'
+                            : 'bg-white/10 text-white/30 cursor-not-allowed'
+                        }`}
+                    disabled={!isValid}
+                    onClick={() => onStart(playerA, playerB)}
+                >
+                    Start Match
                 </button>
             </div>
         </div>
