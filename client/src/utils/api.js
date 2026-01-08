@@ -91,14 +91,58 @@ export const updatePlayer = async (name, data) => {
 };
 
 export const uploadFile = async (file, filename) => {
-    const toBase64 = (file) => new Promise((resolve, reject) => {
+    // Compress image before upload
+    const compressImage = (file, maxSizeKB = 100) => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Calculate new dimensions (max 800x800 to reduce size)
+                let width = img.width;
+                let height = img.height;
+                const maxDimension = 800;
+
+                if (width > height && width > maxDimension) {
+                    height = (height * maxDimension) / width;
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = (width * maxDimension) / height;
+                    height = maxDimension;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Try different quality levels to get under maxSizeKB
+                let quality = 0.9;
+                let compressedBase64;
+
+                const tryCompress = () => {
+                    compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    const sizeKB = (compressedBase64.length * 3) / 4 / 1024; // Approximate size in KB
+
+                    if (sizeKB > maxSizeKB && quality > 0.1) {
+                        quality -= 0.1;
+                        tryCompress();
+                    } else {
+                        resolve(compressedBase64);
+                    }
+                };
+
+                tryCompress();
+            };
+            img.onerror = reject;
+        };
+        reader.onerror = reject;
     });
 
-    const base64 = await toBase64(file);
+    const base64 = await compressImage(file);
 
     const res = await apiRequest(`${API_URL}/upload`, {
         method: 'POST',
