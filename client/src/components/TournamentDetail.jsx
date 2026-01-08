@@ -132,13 +132,33 @@ export default function TournamentDetail() {
     const themeKey = currentTournament?.theme || 'classic';
     const theme = TOURNAMENT_THEMES[themeKey] || TOURNAMENT_THEMES['classic'];
 
-    const themeStyles = {
-        '--color-primary': theme.colors.primary,
-        '--color-secondary': theme.colors.secondary,
-        backgroundImage: theme.colors.background,
-        backgroundSize: theme.colors.backgroundSize || 'cover',
-        '--gradient-card': theme.colors.card === 'transparent' ? 'none' : theme.colors.card.includes('gradient') ? theme.colors.card : `linear-gradient(145deg, ${theme.colors.card}, ${theme.colors.card})`,
-    };
+    // Apply theme to body
+    useEffect(() => {
+        if (theme) {
+            const root = document.documentElement;
+            root.style.setProperty('--color-primary', theme.colors.primary);
+            root.style.setProperty('--color-secondary', theme.colors.secondary);
+            // Update body background
+            document.body.style.background = theme.colors.background;
+            document.body.style.backgroundSize = theme.colors.backgroundSize || 'cover';
+            document.body.style.backgroundAttachment = 'fixed';
+
+            // Update card gradient variable
+            const cardGradient = theme.colors.card === 'transparent' ? 'none' : theme.colors.card.includes('gradient') ? theme.colors.card : `linear-gradient(145deg, ${theme.colors.card}, ${theme.colors.card})`;
+            root.style.setProperty('--gradient-card', cardGradient);
+        }
+
+        return () => {
+            // Cleanup / Reset
+            const root = document.documentElement;
+            root.style.removeProperty('--color-primary');
+            root.style.removeProperty('--color-secondary');
+            root.style.removeProperty('--gradient-card');
+            document.body.style.background = '';
+            document.body.style.backgroundSize = '';
+            document.body.style.backgroundAttachment = '';
+        };
+    }, [theme]);
 
     const isCompleted = currentTournament.status === 'completed';
 
@@ -225,7 +245,7 @@ export default function TournamentDetail() {
     };
 
     return (
-        <div className="tournament-detail-screen container animate-fade-in" style={themeStyles}>
+        <div className="tournament-detail-screen container animate-fade-in">
             <div className="header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <button className="back-btn" onClick={() => {
                     actions.setTournament(null);

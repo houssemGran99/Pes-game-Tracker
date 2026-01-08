@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import { put } from '@vercel/blob';
 import Player from './models/Player.js';
 import Match from './models/Match.js';
 
@@ -14,6 +15,42 @@ router.get('/players', async (req, res) => {
         const players = await Player.find().sort({ createdAt: 1 });
         res.json(players);
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.put('/players/:name', requireAdmin, async (req, res) => {
+    try {
+        const { avatarUrl } = req.body;
+        const player = await Player.findOneAndUpdate(
+            { name: req.params.name },
+            { $set: { avatarUrl } },
+            { new: true, upsert: true }
+        );
+        res.json(player);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.post('/upload', requireAdmin, async (req, res) => {
+    try {
+        if (!req.body.file || !req.body.filename) {
+            return res.status(400).json({ message: 'No file provided' });
+        }
+
+        // Expected format: data:image/png;base64,....
+        const base64Data = req.body.file.split(';base64,').pop();
+        const buffer = Buffer.from(base64Data, 'base64');
+        const filename = `${Date.now()}-${req.body.filename}`;
+
+        const blob = await put(filename, buffer, {
+            access: 'public',
+        });
+
+        res.json(blob);
+    } catch (err) {
+        console.error('Upload error:', err);
         res.status(500).json({ message: err.message });
     }
 });

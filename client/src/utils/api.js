@@ -77,6 +77,42 @@ export const createPlayer = async (name) => {
 };
 
 
+export const updatePlayer = async (name, data) => {
+    const res = await apiRequest(`${API_URL}/players/${name}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to update player');
+    }
+    return await res.json();
+};
+
+export const uploadFile = async (file, filename) => {
+    const toBase64 = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+
+    const base64 = await toBase64(file);
+
+    const res = await apiRequest(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: base64, filename: filename || file.name }),
+    });
+
+    if (!res.ok) {
+        throw new Error('Upload failed');
+    }
+    return await res.json();
+};
+
+
 export const fetchTournaments = async () => {
     try {
         const res = await apiRequest(`${API_URL}/tournaments`, { cache: 'no-store' });
