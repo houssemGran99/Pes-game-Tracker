@@ -19,6 +19,9 @@ importers:
       react-dom:
         specifier: 19.2.3
         version: 19.2.3(react@19.2.3)
+      three:
+        specifier: ^0.182.0
+        version: 0.182.0
 
   server:
     dependencies:
@@ -692,6 +695,9 @@ packages:
       babel-plugin-macros:
         optional: true
 
+  three@0.182.0:
+    resolution: {integrity: sha512-GbHabT+Irv+ihI1/f5kIIsZ+Ef9Sl5A1Y7imvS5RQjWgtTPfPnZ43JmlYI7NtCRDK9zir20lQpfg8/9Yd02OvQ==}
+
   toidentifier@1.0.1:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
@@ -1348,6 +1354,8 @@ snapshots:
     dependencies:
       client-only: 0.0.1
       react: 19.2.3
+
+  three@0.182.0: {}
 
   toidentifier@1.0.1: {}
 

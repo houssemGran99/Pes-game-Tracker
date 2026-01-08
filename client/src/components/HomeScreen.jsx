@@ -1,5 +1,6 @@
 import { useMatch } from '../context/MatchContext';
 import { useAuth } from '../context/AuthContext';
+import ThreeLogo from './ThreeLogo';
 
 export default function HomeScreen() {
     const { actions } = useMatch();
@@ -7,7 +8,7 @@ export default function HomeScreen() {
 
     return (
         <div className="home-screen animate-fade-in">
-            <div className="home-logo">⚽</div>
+            <ThreeLogo />
             <h1 className="title">PES 6 Tracker</h1>
             <p className="subtitle">Track your matches & stats</p>
 
@@ -23,7 +24,7 @@ export default function HomeScreen() {
                     </button>
                 )}
 
-              
+
 
                 <button className="nav-btn" onClick={() => actions.setScreen('leagueTable')}>
                     <span className="nav-btn-icon">📋</span>
@@ -34,7 +35,7 @@ export default function HomeScreen() {
                     <span>→</span>
                 </button>
 
-  <button className="nav-btn" onClick={() => actions.setScreen('history')}>
+                <button className="nav-btn" onClick={() => actions.setScreen('history')}>
                     <span className="nav-btn-icon">📜</span>
                     <div className="nav-btn-text">
                         <div className="nav-btn-title">Match History</div>
