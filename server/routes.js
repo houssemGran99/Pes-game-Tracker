@@ -162,7 +162,7 @@ router.post('/matches', requireAdmin, async (req, res) => {
     }
 });
 
-router.delete('/matches/:id', async (req, res) => {
+router.delete('/matches/:id', requireAdmin, async (req, res) => {
     try {
         const match = await Match.findByIdAndDelete(req.params.id);
         if (!match) return res.status(404).json({ message: 'Match not found' });
@@ -172,7 +172,7 @@ router.delete('/matches/:id', async (req, res) => {
     }
 });
 
-router.put('/matches/:id', async (req, res) => {
+router.put('/matches/:id', requireAdmin, async (req, res) => {
     try {
         const { scoreA, scoreB } = req.body;
         const match = await Match.findById(req.params.id);
