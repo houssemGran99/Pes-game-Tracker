@@ -1332,3 +1332,131 @@ body {
     transform: translateY(0px) rotate(0deg);
   }
 }
+
+/* Tournament Screen Responsive Styles */
+@media (max-width: 768px) {
+  .tournament-detail-screen .header-actions {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
+  }
+
+  .tournament-detail-screen .section-title {
+    font-size: 1.5rem !important;
+  }
+
+  .tournament-actions {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .tournament-table .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .league-table {
+    min-width: 600px;
+  }
+
+  .league-table th,
+  .league-table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.85rem;
+  }
+
+  .league-table .team-cell {
+    min-width: 100px;
+  }
+
+  .form-badges {
+    gap: 2px !important;
+  }
+
+  .form-badge {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 0.65rem !important;
+  }
+
+  .winner-banner {
+    padding: 1.5rem !important;
+  }
+
+  .winner-banner>div:first-child {
+    font-size: 2rem !important;
+  }
+
+  .winner-banner>div:nth-child(2) {
+    font-size: 1.2rem !important;
+  }
+
+  .winner-banner>div:last-child {
+    font-size: 1.8rem !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .stat-card {
+    padding: 1rem !important;
+  }
+
+  .stat-value {
+    font-size: 1.5rem !important;
+  }
+
+  .match-card {
+    padding: 0.75rem !important;
+  }
+
+  .match-card-score {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .match-card-vs {
+    margin: 0.25rem 0;
+  }
+
+  .player-header {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .avatar-container {
+    width: 80px !important;
+    height: 80px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .tournament-detail-screen .container {
+    padding: 0.75rem;
+  }
+
+  .back-btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .league-table {
+    min-width: 500px;
+  }
+
+  .league-table th,
+  .league-table td {
+    padding: 0.4rem 0.2rem;
+    font-size: 0.75rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tournament-actions button {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+}
