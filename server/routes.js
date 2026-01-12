@@ -7,7 +7,7 @@ import Match from './models/Match.js';
 import Tournament from './models/Tournament.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+// const JWT_SECRET = process.env.JWT_SECRET || 'secret'; // Moved inside functions
 
 // Auth Middleware
 const requireAdmin = (req, res, next) => {
@@ -16,8 +16,11 @@ const requireAdmin = (req, res, next) => {
 
     if (!token) return res.status(401).json({ message: 'Unauthorized: No token provided' });
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: 'Forbidden: Invalid token' });
+    const secret = process.env.JWT_SECRET || 'secret';
+    jwt.verify(token, secret, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Forbidden: Invalid token' });
+        }
 
         if (user.role !== 'admin') {
             return res.status(403).json({ message: 'Forbidden: Admin access only' });
@@ -40,7 +43,7 @@ router.get('/players', async (req, res) => {
 
 router.put('/players/:name', requireAdmin, async (req, res) => {
     const oldName = req.params.name;
-    const { name: newName, avatarUrl } = req.body;
+    const { name: newName, avatarUrl, nickname } = req.body;
 
     try {
         const player = await Player.findOne({ name: oldName });
@@ -72,6 +75,11 @@ router.put('/players/:name', requireAdmin, async (req, res) => {
         // Handle Avatar Update
         if (avatarUrl !== undefined) {
             player.avatarUrl = avatarUrl;
+        }
+
+        // Handle Nickname Update
+        if (nickname !== undefined) {
+            player.nickname = nickname;
         }
 
         await player.save();
@@ -106,9 +114,9 @@ router.post('/upload', requireAdmin, async (req, res) => {
 });
 
 router.post('/players', async (req, res) => {
-    const { name } = req.body;
+    const { name, nickname } = req.body;
     try {
-        const newPlayer = new Player({ name });
+        const newPlayer = new Player({ name, nickname });
         await newPlayer.save(); // Unique constraint handles duplicates
         res.status(201).json(newPlayer);
     } catch (err) {
@@ -128,7 +136,7 @@ router.post('/auth/login', (req, res) => {
 
     if (username === 'admin' && password === process.env.ADMIN_SECRET) {
         const user = { role: 'admin', username: 'Admin' };
-        const token = jwt.sign(user, JWT_SECRET, { expiresIn: '24h' });
+        const token = jwt.sign(user, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
 
         return res.json({
             success: true,
@@ -277,6 +285,86 @@ router.put('/matches/:id', requireAdmin, async (req, res) => {
         res.json(updatedMatch);
     } catch (err) {
         res.status(400).json({ message: err.message });
+    }
+});
+
+import multer from 'multer';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// Multer setup for memory storage
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Gemini Setup
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyDRdbm0B3ZYLL1fU4qgb23gt9RApcx_QOw");
+
+console.log("Gemini API Key:", process.env.GEMINI_API_KEY || "AIzaSyDRdbm0B3ZYLL1fU4qgb23gt9RApcx_QOw");
+
+
+// Note: We need requireAdmin here. Unsure if 'upload' middleware conflicts if placed before/after. 
+// Standard express: router.post(path, middleware1, middleware2, handler)
+router.post('/voice-match-gemini', requireAdmin, upload.single('audio'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No audio file provided' });
+        }
+
+        if (!process.env.GEMINI_API_KEY) {
+            console.error("Missing GEMINI_API_KEY");
+            return res.status(500).json({ message: 'Server missing API Key' });
+        }
+
+        // 1. Get List of Players
+        const players = await Player.find({}, 'name nickname');
+        const playerList = players.map(p => {
+            return p.nickname ? `${p.name} (aka ${p.nickname})` : p.name;
+        }).join(', ');
+
+        // 2. Prepare Gemini Request
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+
+        const prompt = `
+        Listen to this audio. The speaker is reporting a PES 6 match score. 
+        The language is likely Tunisian Arabic mixed with French/English numbers.
+        
+        Here is the list of known players: [${playerList}].
+        
+        Instructions:
+        1. Identify the two players mentioned. Map nicknames/aliases to the official names in the list.
+        2. Identify the score for each player.
+        3. Return ONLY a JSON object with this format:
+        {
+            "playerA": "Official Name A",
+            "scoreA": 1,
+            "playerB": "Official Name B",
+            "scoreB: 0
+        }
+        
+        If you cannot identify players or scores, return null or try your best guess.
+        `;
+
+        const audioPart = {
+            inlineData: {
+                data: req.file.buffer.toString('base64'),
+                mimeType: req.file.mimetype || 'audio/webm',
+            },
+        };
+
+        const result = await model.generateContent([prompt, audioPart]);
+        const response = await result.response;
+        const text = response.text();
+
+        console.log("Gemini Response:", text);
+
+        // Clean markdown code blocks if present
+        const jsonStr = text.replace(/```json|```/g, '').trim();
+        const matchData = JSON.parse(jsonStr);
+
+        res.json(matchData);
+
+    } catch (err) {
+        console.error('Gemini Voice Error:', err);
+        res.status(500).json({ message: err.message });
     }
 });
 

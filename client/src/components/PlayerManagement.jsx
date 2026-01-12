@@ -10,6 +10,7 @@ export default function PlayerManagement() {
     const [editingPlayer, setEditingPlayer] = useState(null);
     // Editing Form State
     const [editName, setEditName] = useState('');
+    const [editNickname, setEditNickname] = useState('');
     const [editAvatarUrl, setEditAvatarUrl] = useState('');
     const [uploading, setUploading] = useState(false);
 
@@ -27,12 +28,14 @@ export default function PlayerManagement() {
     const handleEditClick = (player) => {
         setEditingPlayer(player);
         setEditName(player.name);
+        setEditNickname(player.nickname || '');
         setEditAvatarUrl(player.avatarUrl || '');
     };
 
     const handleCancel = () => {
         setEditingPlayer(null);
         setEditName('');
+        setEditNickname('');
         setEditAvatarUrl('');
         setUploading(false);
     };
@@ -43,6 +46,7 @@ export default function PlayerManagement() {
         try {
             await updatePlayer(editingPlayer.name, {
                 name: editName,
+                nickname: editNickname,
                 avatarUrl: editAvatarUrl
             });
 
@@ -112,6 +116,17 @@ export default function PlayerManagement() {
                         <input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleAvatarUpload} />
                     </div>
 
+                    <div className="mb-4">
+                        <label className="block text-xs font-bold text-white/60 mb-2 uppercase tracking-wider">Nickname (Voice Alias)</label>
+                        <input
+                            type="text"
+                            className="w-full p-4 bg-[#0a0a0f] border border-white/10 rounded-xl text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all text-lg"
+                            value={editNickname}
+                            onChange={e => setEditNickname(e.target.value)}
+                            placeholder="e.g. Sdam"
+                        />
+                    </div>
+
                     <div className="mb-8">
                         <label className="block text-xs font-bold text-white/60 mb-2 uppercase tracking-wider">Name</label>
                         <input
@@ -149,7 +164,10 @@ export default function PlayerManagement() {
                                 )}
                             </div>
 
-                            <div className="font-bold text-lg mb-4 text-white w-full overflow-hidden text-ellipsis whitespace-nowrap" title={player.name}>{player.name}</div>
+                            <div className="font-bold text-lg mb-1 text-white w-full overflow-hidden text-ellipsis whitespace-nowrap" title={player.name}>{player.name}</div>
+                            {player.nickname && (
+                                <div className="text-xs text-white/50 mb-4 bg-white/5 px-2 py-0.5 rounded-full">"{player.nickname}"</div>
+                            )}
 
                             <div className="mt-auto w-full">
                                 <button

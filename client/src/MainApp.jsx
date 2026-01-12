@@ -14,6 +14,7 @@ import LeagueTable from './components/LeagueTable';
 import TournamentList from './components/TournamentList';
 import TournamentDetail from './components/TournamentDetail';
 import PlayerManagement from './components/PlayerManagement';
+import VoiceMatchInput from './components/VoiceMatchInput';
 
 function MainApp() {
   const { state } = useMatch();
@@ -79,6 +80,7 @@ function MainApp() {
       <div className="container">
         {renderScreen()}
       </div>
+      <VoiceMatchInput />
     </div>
   );
 }
