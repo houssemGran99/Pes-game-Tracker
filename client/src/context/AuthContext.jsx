@@ -37,6 +37,12 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('pes6_user');
   };
 
+  useEffect(() => {
+    const handleLogout = () => logout();
+    window.addEventListener('auth-logout', handleLogout);
+    return () => window.removeEventListener('auth-logout', handleLogout);
+  }, []);
+
   const value = {
     user,
     loading,

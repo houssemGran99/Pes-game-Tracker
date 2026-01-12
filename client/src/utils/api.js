@@ -23,6 +23,13 @@ const apiRequest = async (url, options = {}) => {
 
     try {
         const res = await fetch(url, { ...options, headers });
+
+        if (res.status === 401) {
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('auth-logout'));
+            }
+        }
+
         return res;
     } finally {
         // Dispatch loading end
