@@ -1,12 +1,13 @@
+import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import dotenv from 'dotenv';
+
 import routes from './routes.js';
 
 import rateLimit from 'express-rate-limit';
 
-dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;

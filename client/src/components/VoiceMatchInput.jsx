@@ -88,8 +88,8 @@ export default function VoiceMatchInput() {
 
         } catch (error) {
             console.error("Processing failed", error);
-            setStatus('error');
-            setTranscript('Failed to understand audio. Try again.');
+            setStatus('error_parse');
+            setTranscript('Audio was unclear or server error.');
         }
     };
 
@@ -154,15 +154,27 @@ export default function VoiceMatchInput() {
             </button>
 
             {/* Modal for Confirmation */}
-            {(status === 'confirming' || status === 'submitting' || status === 'success' || status === 'error_parse') && (
+            {(status === 'processing' || status === 'confirming' || status === 'submitting' || status === 'success' || status === 'error_parse') && (
                 <div className="voice-modal-overlay">
                     <div className="voice-modal card">
                         <h3>Voice Match</h3>
 
+                        {status === 'processing' && (
+                            <div className="voice-processing">
+                                <div className="loader">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                                <p>{transcript}</p>
+                            </div>
+                        )}
+
                         {status === 'error_parse' && (
                             <div className="voice-error">
-                                <p>Could not understand: "{transcript}"</p>
-                                <p className="hint">Try: "Houssem 3 Sadam 5"</p>
+                                <p className="error-msg">{transcript}</p>
+                                <p className="hint">Try ensuring both player names and score are clear.</p>
+                                <p className="hint">Example: "Houssem 3 Sadam 5"</p>
                                 <button className="btn btn-ghost" onClick={handleCancel}>Close</button>
                             </div>
                         )}
@@ -272,6 +284,37 @@ export default function VoiceMatchInput() {
                     background: #1e293b;
                     color: white;
                     border: 1px solid rgba(255,255,255,0.1);
+                }
+
+                .voice-processing {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 1.5rem;
+                    padding: 1rem 0;
+                }
+
+                .loader {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .loader span {
+                    width: 12px;
+                    height: 12px;
+                    background-color: var(--color-primary, #3b82f6);
+                    border-radius: 50%;
+                    animation: bounce 1.4s infinite ease-in-out both;
+                }
+
+                .loader span:nth-child(1) { animation-delay: -0.32s; }
+                .loader span:nth-child(2) { animation-delay: -0.16s; }
+
+                @keyframes bounce {
+                    0%, 80%, 100% { transform: scale(0); }
+                    40% { transform: scale(1); }
                 }
 
                 .match-preview {

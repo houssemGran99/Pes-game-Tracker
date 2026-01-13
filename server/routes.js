@@ -295,10 +295,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Gemini Setup
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyDRdbm0B3ZYLL1fU4qgb23gt9RApcx_QOw");
-
-console.log("Gemini API Key:", process.env.GEMINI_API_KEY || "AIzaSyDRdbm0B3ZYLL1fU4qgb23gt9RApcx_QOw");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
 // Note: We need requireAdmin here. Unsure if 'upload' middleware conflicts if placed before/after. 
