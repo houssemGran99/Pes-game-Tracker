@@ -35,7 +35,7 @@ export default {
                 }
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
+                sans: ['var(--font-atari)', 'Inter', 'sans-serif'],
             },
             backgroundImage: {
                 'gradient-primary': 'linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)',

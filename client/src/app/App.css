@@ -51,7 +51,7 @@
   --shadow-glow: 0 0 30px var(--color-primary-glow);
 
   /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: var(--font-atari), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
@@ -839,7 +839,7 @@ body {
 
 @media (min-width: 1024px) {
   .match-list {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -876,6 +876,12 @@ body {
 }
 
 .match-card-player-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  margin-left: auto;
+  margin-right: auto;
   font-size: var(--font-size-md);
   font-weight: 600;
   margin-bottom: var(--space-xs);
@@ -2049,6 +2055,7 @@ body {
     padding: 0.6rem;
   }
 }
+
 /* Player Management */
 .player-grid {
   display: grid;
@@ -2160,15 +2167,15 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-sm);
   }
-  
+
   .player-card {
     padding: var(--space-sm);
   }
-  
-  .player-avatar, .player-avatar-placeholder {
+
+  .player-avatar,
+  .player-avatar-placeholder {
     width: 60px;
     height: 60px;
     font-size: 1.5rem;
   }
 }
-
