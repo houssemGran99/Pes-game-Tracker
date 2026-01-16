@@ -84,6 +84,39 @@ export default function HomeScreen() {
                     <span>→</span>
                 </button>
 
+                <button className="nav-btn" onClick={() => actions.setScreen('news')} style={{ position: 'relative' }}>
+                    <span className="nav-btn-icon">📰</span>
+                    <div className="nav-btn-text">
+                        <div className="nav-btn-title">Weekly News</div>
+                        <div className="nav-btn-desc">Match analysis & commentary</div>
+                    </div>
+                    <span>→</span>
+                    {/* NEW Badge */}
+                    <span style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        background: 'linear-gradient(135deg, #E74C3C, #C0392B)',
+                        color: '#fff',
+                        fontSize: '0.6rem',
+                        fontWeight: 'bold',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '12px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        boxShadow: '0 2px 8px rgba(231, 76, 60, 0.4)',
+                        animation: 'pulse-badge 2s ease-in-out infinite'
+                    }}>
+                        ✨ New
+                    </span>
+                    <style jsx>{`
+                        @keyframes pulse-badge {
+                            0%, 100% { transform: scale(1); opacity: 1; }
+                            50% { transform: scale(1.1); opacity: 0.9; }
+                        }
+                    `}</style>
+                </button>
+
 
                 <button className="nav-btn" onClick={logout} style={{ marginTop: '2rem', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0' }}>
                     <span className="nav-btn-icon">🚪</span>
