@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 
 const ThreeLogo = dynamic(() => import('./ThreeLogo'), { ssr: false });
 import ChampionsHistory from './ChampionsHistory';
+import PlayerAchievements from './PlayerAchievements';
 
 export default function HomeScreen() {
     const { actions } = useMatch();
@@ -16,6 +17,7 @@ export default function HomeScreen() {
             <p className="subtitle">Track your matches & stats</p>
 
             <ChampionsHistory />
+            <PlayerAchievements />
 
             <nav className="home-nav">
                 {isAdmin && (
