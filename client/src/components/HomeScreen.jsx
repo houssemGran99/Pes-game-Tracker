@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import dynamic from 'next/dynamic';
 
 const ThreeLogo = dynamic(() => import('./ThreeLogo'), { ssr: false });
+import ChampionsHistory from './ChampionsHistory';
 
 export default function HomeScreen() {
     const { actions } = useMatch();
@@ -13,6 +14,8 @@ export default function HomeScreen() {
             <ThreeLogo />
             <h1 className="title">PES 6 Tracker</h1>
             <p className="subtitle">Track your matches & stats</p>
+
+            <ChampionsHistory />
 
             <nav className="home-nav">
                 {isAdmin && (

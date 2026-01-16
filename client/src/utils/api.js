@@ -220,7 +220,7 @@ export const deleteTournament = async (id) => {
     return await res.json();
 };
 
-export const fetchMatches = async (tournamentId = null, page = null, limit = null, player = null) => {
+export const fetchMatches = async (tournamentId = null, page = null, limit = null, player = null, startDate = null, endDate = null) => {
     try {
         let url = `${API_URL}/matches`;
         const params = new URLSearchParams();
@@ -229,6 +229,8 @@ export const fetchMatches = async (tournamentId = null, page = null, limit = nul
         if (page) params.append('page', page);
         if (limit) params.append('limit', limit);
         if (player) params.append('player', player);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
 
         const queryString = params.toString();
         if (queryString) url += `?${queryString}`;

@@ -222,6 +222,13 @@ router.get('/matches', async (req, res) => {
             ];
         }
 
+        if (req.query.startDate && req.query.endDate) {
+            filter.date = {
+                $gte: new Date(req.query.startDate),
+                $lte: new Date(req.query.endDate)
+            };
+        }
+
         // Check if pagination is requested
         if (req.query.page) {
             const page = parseInt(req.query.page) || 1;
