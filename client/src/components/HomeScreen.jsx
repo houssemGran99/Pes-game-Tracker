@@ -6,6 +6,7 @@ const ThreeLogo = dynamic(() => import('./ThreeLogo'), { ssr: false });
 import ChampionsHistory from './ChampionsHistory';
 import PlayerAchievements from './PlayerAchievements';
 import RandomMatchGenerator from './RandomMatchGenerator';
+import AnalyticsReport from './AnalyticsReport';
 
 export default function HomeScreen() {
     const { actions } = useMatch();
@@ -20,6 +21,7 @@ export default function HomeScreen() {
             <ChampionsHistory />
             <PlayerAchievements />
             <RandomMatchGenerator />
+            <AnalyticsReport />
 
             <nav className="home-nav">
                 {isAdmin && (
