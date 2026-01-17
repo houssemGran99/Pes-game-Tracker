@@ -4,9 +4,7 @@ import dynamic from 'next/dynamic';
 
 const ThreeLogo = dynamic(() => import('./ThreeLogo'), { ssr: false });
 import ChampionsHistory from './ChampionsHistory';
-import PlayerAchievements from './PlayerAchievements';
-import RandomMatchGenerator from './RandomMatchGenerator';
-import AnalyticsReport from './AnalyticsReport';
+
 
 export default function HomeScreen() {
     const { actions } = useMatch();
@@ -19,9 +17,7 @@ export default function HomeScreen() {
             <p className="subtitle">Track your matches & stats</p>
 
             <ChampionsHistory />
-            <PlayerAchievements />
-            <RandomMatchGenerator />
-            <AnalyticsReport />
+
 
             <nav className="home-nav">
                 {isAdmin && (
@@ -31,7 +27,6 @@ export default function HomeScreen() {
                             <div className="nav-btn-title">Start New Match</div>
                             <div className="nav-btn-desc">Begin tracking a new game</div>
                         </div>
-                        <span>→</span>
                     </button>
                 )}
 
@@ -42,7 +37,6 @@ export default function HomeScreen() {
                             <div className="nav-btn-title">Manage Players</div>
                             <div className="nav-btn-desc">Edit names & avatars</div>
                         </div>
-                        <span>→</span>
                     </button>
                 )}
 
@@ -54,7 +48,7 @@ export default function HomeScreen() {
                         <div className="nav-btn-title">League Table</div>
                         <div className="nav-btn-desc">Current standings</div>
                     </div>
-                    <span>→</span>
+                    
                 </button>
 
                 <button className="nav-btn" onClick={() => actions.setScreen('history')}>
@@ -63,7 +57,7 @@ export default function HomeScreen() {
                         <div className="nav-btn-title">Match History</div>
                         <div className="nav-btn-desc">View past matches</div>
                     </div>
-                    <span>→</span>
+                    
                 </button>
 
                 <button className="nav-btn" onClick={() => actions.setScreen('tournamentList')}>
@@ -72,7 +66,7 @@ export default function HomeScreen() {
                         <div className="nav-btn-title">Tournaments</div>
                         <div className="nav-btn-desc">Custom Leagues & Cups</div>
                     </div>
-                    <span>→</span>
+                    
                 </button>
 
                 <button className="nav-btn" onClick={() => actions.setScreen('stats')}>
@@ -81,7 +75,25 @@ export default function HomeScreen() {
                         <div className="nav-btn-title">Statistics</div>
                         <div className="nav-btn-desc">Head to Head & Records</div>
                     </div>
-                    <span>→</span>
+                    
+                </button>
+
+                <button className="nav-btn" onClick={() => actions.setScreen('whoPlaysNext')}>
+                    <span className="nav-btn-icon">🎲</span>
+                    <div className="nav-btn-text">
+                        <div className="nav-btn-title">Who Plays Next?</div>
+                        <div className="nav-btn-desc">Random match picker</div>
+                    </div>
+                    
+                </button>
+
+                <button className="nav-btn" onClick={() => actions.setScreen('achievements')}>
+                    <span className="nav-btn-icon">🏅</span>
+                    <div className="nav-btn-text">
+                        <div className="nav-btn-title">Achievements</div>
+                        <div className="nav-btn-desc">Player badges & milestones</div>
+                    </div>
+                    
                 </button>
 
                 <button className="nav-btn" onClick={() => actions.setScreen('news')} style={{ position: 'relative' }}>
@@ -90,7 +102,7 @@ export default function HomeScreen() {
                         <div className="nav-btn-title">Weekly News</div>
                         <div className="nav-btn-desc">Match analysis & commentary</div>
                     </div>
-                    <span>→</span>
+                    
                     {/* NEW Badge */}
                     <span style={{
                         position: 'absolute',

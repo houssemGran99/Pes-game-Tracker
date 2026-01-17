@@ -107,7 +107,7 @@ export default function Statistics() {
         return (
             <div className="animate-fade-in">
 
-                <h3 className="section-title text-center mb-6">Compare Players</h3>
+                <h3 className="section-title text-center mb-6">Head To Head</h3>
 
                 <div className="card mb-4" style={{ padding: '1.5rem', marginBottom: '2rem', position: 'relative', zIndex: 10 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '1rem', alignItems: 'center' }}>

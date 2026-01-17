@@ -338,7 +338,9 @@ export default function NewsSection() {
     };
 
     const formatDate = (dateStr) => {
+        if (!dateStr) return '';
         const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '';
         const now = new Date();
         const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
 
@@ -347,7 +349,6 @@ export default function NewsSection() {
         if (diffDays < 7) return `${diffDays} days ago`;
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
-
     if (loading) {
         return (
             <div className="news-loading text-center p-8">

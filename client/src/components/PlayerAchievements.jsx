@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchMatches, fetchPlayers } from '../utils/api';
-import { calculatePlayerAchievements, ACHIEVEMENTS, getRarityGradient } from '../utils/achievements';
+import { calculatePlayerAchievements, ACHIEVEMENTS, getRarityGradient, calculateAchievementProgress, calculateAchievementPoints, getNextTierProgress } from '../utils/achievements';
 
 export default function PlayerAchievements() {
     const [players, setPlayers] = useState([]);
@@ -8,6 +8,8 @@ export default function PlayerAchievements() {
     const [loading, setLoading] = useState(true);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [playerAchievements, setPlayerAchievements] = useState([]);
+    const [selectedAchievement, setSelectedAchievement] = useState(null);
+    const [achievementProgress, setAchievementProgress] = useState({});
 
     useEffect(() => {
         const loadData = async () => {
@@ -36,6 +38,7 @@ export default function PlayerAchievements() {
 
                     setSelectedPlayer(bestPlayer);
                     setPlayerAchievements(calculatePlayerAchievements(matchesList, bestPlayer.name));
+                    setAchievementProgress(calculateAchievementProgress(matchesList, bestPlayer.name));
                 }
             } catch (error) {
                 console.error("Failed to load achievements data", error);
@@ -50,6 +53,18 @@ export default function PlayerAchievements() {
     const handlePlayerSelect = (player) => {
         setSelectedPlayer(player);
         setPlayerAchievements(calculatePlayerAchievements(matches, player.name));
+        setAchievementProgress(calculateAchievementProgress(matches, player.name));
+        setSelectedAchievement(null);
+    };
+
+    const handleAchievementClick = (achievement, isUnlocked) => {
+        if (!isUnlocked) {
+            setSelectedAchievement(achievement);
+        }
+    };
+
+    const closeProgressModal = () => {
+        setSelectedAchievement(null);
     };
 
     // Get all possible achievements for progress display
@@ -94,6 +109,8 @@ export default function PlayerAchievements() {
                 {players.map(player => {
                     const achievements = calculatePlayerAchievements(matches, player.name);
                     const isSelected = selectedPlayer?.name === player.name;
+                    const points = calculateAchievementPoints(achievements);
+                    const tierInfo = getNextTierProgress(points);
 
                     return (
                         <button
@@ -139,14 +156,16 @@ export default function PlayerAchievements() {
                                 </span>
                             )}
                             <span>{player.name}</span>
+                            {/* Tier Badge */}
                             <span style={{
-                                background: achievements.length > 0 ? 'var(--color-success)' : 'rgba(255,255,255,0.2)',
-                                padding: '0.15rem 0.4rem',
-                                borderRadius: '10px',
-                                fontSize: '0.7rem',
+                                background: tierInfo.currentTier.gradient,
+                                color: tierInfo.currentTier.textColor,
+                                padding: '0.1rem 0.35rem',
+                                borderRadius: '4px',
+                                fontSize: '0.65rem',
                                 fontWeight: 'bold'
                             }}>
-                                {achievements.length}
+                                {tierInfo.currentTier.name}
                             </span>
                         </button>
                     );
@@ -198,14 +217,46 @@ export default function PlayerAchievements() {
                                 {selectedPlayer.name.charAt(0)}
                             </div>
                         )}
-                        <div>
-                            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{selectedPlayer.name}</h3>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <h3 style={{ fontSize: '1.25rem', margin: 0 }}>{selectedPlayer.name}</h3>
+                                {/* Tier Badge */}
+                                {(() => {
+                                    const points = calculateAchievementPoints(playerAchievements);
+                                    const tierInfo = getNextTierProgress(points);
+                                    return (
+                                        <span style={{
+                                            background: tierInfo.currentTier.gradient,
+                                            color: tierInfo.currentTier.textColor,
+                                            padding: '0.25rem 0.6rem',
+                                            borderRadius: '6px',
+                                            fontWeight: 'bold',
+                                            fontSize: '1rem',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                                        }}>
+                                            {tierInfo.currentTier.name}
+                                        </span>
+                                    );
+                                })()}
+                            </div>
                             <p style={{
                                 margin: '0.25rem 0 0 0',
                                 color: 'var(--color-text-muted)',
-                                fontSize: '0.9rem'
+                                fontSize: '0.85rem'
                             }}>
-                                {playerAchievements.length} / {allAchievements.length} achievements unlocked
+                                {playerAchievements.length} / {allAchievements.length} achievements • {calculateAchievementPoints(playerAchievements)} pts
+                                {(() => {
+                                    const points = calculateAchievementPoints(playerAchievements);
+                                    const tierInfo = getNextTierProgress(points);
+                                    if (tierInfo.nextTier) {
+                                        return (
+                                            <span style={{ marginLeft: '0.5rem', color: tierInfo.nextTier.color }}>
+                                                ({tierInfo.pointsNeeded} pts to {tierInfo.nextTier.name})
+                                            </span>
+                                        );
+                                    }
+                                    return null;
+                                })()}
                             </p>
                         </div>
                         {/* Progress Ring */}
@@ -265,6 +316,7 @@ export default function PlayerAchievements() {
                             return (
                                 <div
                                     key={achievement.id}
+                                    onClick={() => handleAchievementClick(achievement, isUnlocked)}
                                     style={{
                                         background: isUnlocked
                                             ? getRarityGradient(achievement.rarity)
@@ -272,11 +324,12 @@ export default function PlayerAchievements() {
                                         borderRadius: '12px',
                                         padding: '1rem',
                                         textAlign: 'center',
-                                        opacity: isUnlocked ? 1 : 0.4,
+                                        opacity: isUnlocked ? 1 : 0.6,
                                         filter: isUnlocked ? 'none' : 'grayscale(100%)',
                                         transition: 'all 0.3s ease',
                                         position: 'relative',
-                                        overflow: 'hidden'
+                                        overflow: 'hidden',
+                                        cursor: isUnlocked ? 'default' : 'pointer'
                                     }}
                                 >
                                     {/* Shine effect for unlocked */}
@@ -347,6 +400,20 @@ export default function PlayerAchievements() {
                                             🔒
                                         </div>
                                     )}
+                                    {/* Click hint for locked */}
+                                    {!isUnlocked && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '0.25rem',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            fontSize: '0.55rem',
+                                            color: 'var(--color-text-muted)',
+                                            opacity: 0.7
+                                        }}>
+                                            Tap for progress
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
@@ -402,11 +469,152 @@ export default function PlayerAchievements() {
                 </div>
             )}
 
+            {/* Progress Modal */}
+            {selectedAchievement && (
+                <div
+                    onClick={closeProgressModal}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.8)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        padding: '1rem',
+                        animation: 'fadeIn 0.2s ease'
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: 'var(--gradient-card)',
+                            borderRadius: '16px',
+                            padding: '1.5rem',
+                            maxWidth: '320px',
+                            width: '100%',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            animation: 'slideUp 0.3s ease'
+                        }}
+                    >
+                        {/* Achievement Icon & Name */}
+                        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                            <div style={{
+                                fontSize: '3rem',
+                                marginBottom: '0.5rem',
+                                filter: 'grayscale(50%)',
+                                opacity: 0.8
+                            }}>
+                                {selectedAchievement.icon}
+                            </div>
+                            <h3 style={{ margin: 0, fontSize: '1.2rem' }}>
+                                {selectedAchievement.name}
+                            </h3>
+                            <p style={{
+                                margin: '0.25rem 0 0 0',
+                                color: 'var(--color-text-muted)',
+                                fontSize: '0.85rem'
+                            }}>
+                                {selectedAchievement.description}
+                            </p>
+                            <span style={{
+                                display: 'inline-block',
+                                marginTop: '0.5rem',
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '4px',
+                                fontSize: '0.7rem',
+                                textTransform: 'uppercase',
+                                background: getRarityGradient(selectedAchievement.rarity),
+                                color: '#fff'
+                            }}>
+                                {selectedAchievement.rarity}
+                            </span>
+                        </div>
+
+                        {/* Progress Section */}
+                        {achievementProgress[selectedAchievement.id] && (
+                            <div>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    marginBottom: '0.5rem',
+                                    fontSize: '0.9rem'
+                                }}>
+                                    <span style={{ color: 'var(--color-text-muted)' }}>
+                                        {selectedPlayer?.name}'s Progress
+                                    </span>
+                                    <span style={{ fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                                        {Math.round(achievementProgress[selectedAchievement.id].percentage)}%
+                                    </span>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div style={{
+                                    height: '12px',
+                                    background: 'rgba(255,255,255,0.1)',
+                                    borderRadius: '6px',
+                                    overflow: 'hidden',
+                                    marginBottom: '0.75rem'
+                                }}>
+                                    <div style={{
+                                        height: '100%',
+                                        width: `${achievementProgress[selectedAchievement.id].percentage}%`,
+                                        background: getRarityGradient(selectedAchievement.rarity),
+                                        borderRadius: '6px',
+                                        transition: 'width 0.5s ease'
+                                    }} />
+                                </div>
+
+                                {/* Progress Label */}
+                                <p style={{
+                                    textAlign: 'center',
+                                    color: 'var(--color-text-muted)',
+                                    fontSize: '0.85rem',
+                                    margin: 0
+                                }}>
+                                    {achievementProgress[selectedAchievement.id].label}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Close Button */}
+                        <button
+                            onClick={closeProgressModal}
+                            style={{
+                                width: '100%',
+                                marginTop: '1.5rem',
+                                padding: '0.75rem',
+                                borderRadius: '8px',
+                                border: 'none',
+                                background: 'var(--gradient-primary)',
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <style jsx>{`
                 @keyframes shine {
                     0% { left: -100%; }
                     20% { left: 100%; }
                     100% { left: 100%; }
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
         </div>

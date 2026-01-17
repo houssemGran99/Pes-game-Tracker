@@ -16,6 +16,8 @@ import TournamentDetail from './components/TournamentDetail';
 import PlayerManagement from './components/PlayerManagement';
 import VoiceMatchInput from './components/VoiceMatchInput';
 import NewsSection from './components/NewsSection';
+import WhoPlaysNext from './components/WhoPlaysNext';
+import AchievementsPage from './components/AchievementsPage';
 
 function MainApp() {
   const { state } = useMatch();
@@ -63,6 +65,10 @@ function MainApp() {
         return <PlayerManagement />;
       case 'news':
         return <NewsSection />;
+      case 'whoPlaysNext':
+        return <WhoPlaysNext />;
+      case 'achievements':
+        return <AchievementsPage />;
       default:
         return <HomeScreen />;
     }
