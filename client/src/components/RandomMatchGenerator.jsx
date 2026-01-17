@@ -9,7 +9,6 @@ export default function RandomMatchGenerator() {
     const [isSpinning, setIsSpinning] = useState(false);
     const [showResult, setShowResult] = useState(false);
     const [recentMatches, setRecentMatches] = useState([]);
-    const [autoExcludeLastPlayers, setAutoExcludeLastPlayers] = useState(true);
 
     const spinTimeoutRef = useRef(null);
 
@@ -25,15 +24,9 @@ export default function RandomMatchGenerator() {
                 setMatches(matchesList);
                 setPlayers(playersData || []);
 
-                // Get last 5 matches
+                // Get last 5 matches for display only
                 const sorted = [...matchesList].sort((a, b) => new Date(b.date) - new Date(a.date));
                 setRecentMatches(sorted.slice(0, 5));
-
-                // Auto-exclude last match players
-                if (sorted.length > 0 && autoExcludeLastPlayers) {
-                    const lastMatch = sorted[0];
-                    setExcludedPlayers([lastMatch.playerA, lastMatch.playerB]);
-                }
             } catch (error) {
                 console.error("Failed to load data", error);
             }
@@ -45,34 +38,11 @@ export default function RandomMatchGenerator() {
     // Get available players (not excluded)
     const availablePlayers = players.filter(p => !excludedPlayers.includes(p.name));
 
-    // Calculate play frequency for fair rotation
-    const getPlayerMatchCount = (playerName) => {
-        return matches.filter(m => m.playerA === playerName || m.playerB === playerName).length;
-    };
-
-    // Weight players by inverse of match count for fair rotation
-    const getWeightedRandomPlayer = (exclude = []) => {
+    // Get random player (pure random, no weighting)
+    const getRandomPlayer = (exclude = []) => {
         const eligible = availablePlayers.filter(p => !exclude.includes(p.name));
         if (eligible.length === 0) return null;
-
-        // Calculate weights (players with fewer matches have higher weight)
-        const maxMatches = Math.max(...eligible.map(p => getPlayerMatchCount(p.name)), 1);
-        const weights = eligible.map(p => {
-            const matchCount = getPlayerMatchCount(p.name);
-            return maxMatches - matchCount + 1; // Inverse weight
-        });
-
-        const totalWeight = weights.reduce((a, b) => a + b, 0);
-        let random = Math.random() * totalWeight;
-
-        for (let i = 0; i < eligible.length; i++) {
-            random -= weights[i];
-            if (random <= 0) {
-                return eligible[i];
-            }
-        }
-
-        return eligible[eligible.length - 1];
+        return eligible[Math.floor(Math.random() * eligible.length)];
     };
 
     const toggleExcludePlayer = (playerName) => {
@@ -107,9 +77,9 @@ export default function RandomMatchGenerator() {
             if (spinCount >= maxSpins) {
                 clearInterval(spinInterval);
 
-                // Final selection with weighted randomness
-                const playerA = getWeightedRandomPlayer([]);
-                const playerB = getWeightedRandomPlayer([playerA.name]);
+                // Final selection - pure random
+                const playerA = getRandomPlayer([]);
+                const playerB = getRandomPlayer([playerA.name]);
 
                 setSelectedPlayers({ playerA, playerB });
                 setIsSpinning(false);
@@ -148,38 +118,11 @@ export default function RandomMatchGenerator() {
                     background: 'rgba(0,0,0,0.2)'
                 }}>
                     <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
+                        fontSize: '0.85rem',
+                        color: 'var(--color-text-muted)',
                         marginBottom: '0.75rem'
                     }}>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-                            👥 Available Players ({availablePlayers.length}/{players.length})
-                        </span>
-                        <label style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            fontSize: '0.75rem',
-                            color: 'var(--color-text-muted)',
-                            cursor: 'pointer'
-                        }}>
-                            <input
-                                type="checkbox"
-                                checked={autoExcludeLastPlayers}
-                                onChange={(e) => {
-                                    setAutoExcludeLastPlayers(e.target.checked);
-                                    if (!e.target.checked) {
-                                        setExcludedPlayers([]);
-                                    } else if (recentMatches.length > 0) {
-                                        const lastMatch = recentMatches[0];
-                                        setExcludedPlayers([lastMatch.playerA, lastMatch.playerB]);
-                                    }
-                                }}
-                                style={{ accentColor: 'var(--color-primary)' }}
-                            />
-                            Auto-exclude last players
-                        </label>
+                        👥 Available Players ({availablePlayers.length}/{players.length}) - Click to exclude
                     </div>
                     <div style={{
                         display: 'flex',
@@ -188,7 +131,6 @@ export default function RandomMatchGenerator() {
                     }}>
                         {players.map(player => {
                             const isExcluded = excludedPlayers.includes(player.name);
-                            const matchCount = getPlayerMatchCount(player.name);
 
                             return (
                                 <button
@@ -238,13 +180,6 @@ export default function RandomMatchGenerator() {
                                         </span>
                                     )}
                                     {player.name}
-                                    <span style={{
-                                        fontSize: '0.65rem',
-                                        opacity: 0.7,
-                                        marginLeft: '0.25rem'
-                                    }}>
-                                        ({matchCount})
-                                    </span>
                                 </button>
                             );
                         })}
@@ -463,6 +398,6 @@ export default function RandomMatchGenerator() {
                     75% { transform: rotate(5deg); }
                 }
             `}</style>
-        </div>
+        </div >
     );
 }
