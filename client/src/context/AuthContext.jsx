@@ -38,7 +38,10 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    const handleLogout = () => logout();
+    const handleLogout = () => {
+      alert("Session expired. Please login again.");
+      logout();
+    };
     window.addEventListener('auth-logout', handleLogout);
     return () => window.removeEventListener('auth-logout', handleLogout);
   }, []);

@@ -19,7 +19,7 @@ const requireAdmin = (req, res, next) => {
     const secret = process.env.JWT_SECRET || 'secret';
     jwt.verify(token, secret, (err, user) => {
         if (err) {
-            return res.status(403).json({ message: 'Forbidden: Invalid token' });
+            return res.status(401).json({ message: 'Unauthorized: Invalid or expired token' });
         }
 
         if (user.role !== 'admin') {

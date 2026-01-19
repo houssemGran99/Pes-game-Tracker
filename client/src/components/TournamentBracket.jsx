@@ -199,6 +199,7 @@ function MatchCard({ match, playersMap, onClick, isAdmin }) {
                 marginBottom: '1rem',
                 boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
                 transition: 'transform 0.2s',
+                opacity: (match.playerA === 'BYE' || match.playerB === 'BYE') ? 0.5 : 1
             }}
             onMouseEnter={(e) => {
                 if (isReady && !isCompleted && isAdmin) e.currentTarget.style.transform = 'translateY(-2px)';
