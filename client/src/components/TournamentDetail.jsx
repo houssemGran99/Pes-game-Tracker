@@ -4,6 +4,7 @@ import { fetchMatches, updateTournament, deleteTournament, fetchPlayers } from '
 import { calculateOverallStats, calculateLeaderboard } from '../utils/stats';
 import { useAuth } from '../context/AuthContext';
 import PlayerSelect from './PlayerSelect';
+import TournamentBracket from './TournamentBracket';
 import { TOURNAMENT_THEMES } from '../utils/themes';
 
 export default function TournamentDetail() {
@@ -13,7 +14,16 @@ export default function TournamentDetail() {
     const [matches, setMatches] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
     const [playersMap, setPlayersMap] = useState({});
-    const [view, setView] = useState('table'); // 'table', 'matches' or 'addMatch'
+    const [view, setView] = useState('table'); // 'table', 'matches', 'addMatch', 'bracket'
+    const isKnockout = currentTournament?.type === 'knockout';
+
+    useEffect(() => {
+        if (isKnockout && view === 'table') {
+            setView('bracket');
+        } else if (!isKnockout && view === 'bracket') {
+            setView('table');
+        }
+    }, [currentTournament?._id, isKnockout]);
 
     // Edit State
     const [isEditing, setIsEditing] = useState(false);
@@ -91,6 +101,19 @@ export default function TournamentDetail() {
             } catch (err) {
                 console.error('Failed to update tournament status', err);
             }
+        }
+    };
+
+    const handleBracketUpdate = async (updates) => {
+        try {
+            await updateTournament(currentTournament._id, updates);
+            actions.setTournament({
+                ...currentTournament,
+                ...updates
+            });
+        } catch (err) {
+            alert('Failed to update bracket');
+            console.error(err);
         }
     };
 
@@ -313,20 +336,32 @@ export default function TournamentDetail() {
                 </div>
             )}
 
-            <div className="tournament-actions" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                <button
-                    className={`btn ${view === 'table' ? 'btn-primary' : 'btn-ghost'}`}
-                    onClick={() => setView('table')}
-                >
-                    Leaderboard
-                </button>
+            <div className="tournament-actions" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', justifyContent: 'center' }}>
+                {!isKnockout && (
+                    <button
+                        className={`btn ${view === 'table' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => setView('table')}
+                    >
+                        Leaderboard
+                    </button>
+                )}
+
+                {isKnockout && (
+                    <button
+                        className={`btn ${view === 'bracket' ? 'btn-primary' : 'btn-ghost'}`}
+                        onClick={() => setView('bracket')}
+                    >
+                        Bracket
+                    </button>
+                )}
+
                 <button
                     className={`btn ${view === 'matches' ? 'btn-primary' : 'btn-ghost'}`}
                     onClick={() => setView('matches')}
                 >
                     Matches
                 </button>
-                {isAdmin && !isCompleted && (
+                {isAdmin && !isCompleted && !isKnockout && (
                     <button
                         className="btn btn-success"
                         onClick={() => {
@@ -337,6 +372,16 @@ export default function TournamentDetail() {
                     </button>
                 )}
             </div>
+
+            {view === 'bracket' && (
+                <div className="bracket-wrapper" style={{ overflowX: 'auto', paddingBottom: '2rem' }}>
+                    <TournamentBracket
+                        tournament={currentTournament}
+                        playersMap={playersMap}
+                        onUpdateTournament={handleBracketUpdate}
+                    />
+                </div>
+            )}
 
             {view === 'addMatch' && !isCompleted && (
                 <LocalNewMatch

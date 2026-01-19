@@ -4,6 +4,7 @@ import { fetchTournaments, createTournament } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import PlayerSelect from './PlayerSelect';
 
+import { generateBracket } from '../utils/bracket';
 import { TOURNAMENT_THEMES } from '../utils/themes';
 
 export default function TournamentList() {
@@ -16,6 +17,7 @@ export default function TournamentList() {
     const [participants, setParticipants] = useState([]);
     const [currentPlayer, setCurrentPlayer] = useState('');
     const [selectedTheme, setSelectedTheme] = useState('classic');
+    const [tournamentType, setTournamentType] = useState('league'); // 'league' or 'knockout'
 
     useEffect(() => {
         const loadTournaments = async () => {
@@ -32,13 +34,25 @@ export default function TournamentList() {
             return;
         }
 
+        let roundsData = [];
+        if (tournamentType === 'knockout') {
+            try {
+                roundsData = generateBracket(participants);
+            } catch (err) {
+                alert(err.message);
+                return;
+            }
+        }
+
         try {
             const created = await createTournament({
                 name: newTournamentName,
                 participants,
                 status: 'active',
                 maxPoints: maxPoints ? parseInt(maxPoints) : null,
-                theme: selectedTheme
+                theme: selectedTheme,
+                type: tournamentType,
+                rounds: roundsData
             });
             setTournaments([created, ...tournaments]);
             setIsCreating(false);
@@ -46,6 +60,7 @@ export default function TournamentList() {
             setMaxPoints('');
             setParticipants([]);
             setSelectedTheme('classic');
+            setTournamentType('league');
         } catch (err) {
             alert('Failed to create tournament');
         }
@@ -137,15 +152,36 @@ export default function TournamentList() {
                     </div>
 
                     <div className="form-group">
-                        <label>Target Points (Optional)</label>
-                        <input
-                            type="number"
-                            className="form-input"
-                            value={maxPoints}
-                            onChange={e => setMaxPoints(e.target.value)}
-                            placeholder="Points needed to win"
-                        />
+                        <label>Tournament Type</label>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button
+                                className={`btn ${tournamentType === 'league' ? 'btn-primary' : 'btn-ghost'}`}
+                                onClick={() => setTournamentType('league')}
+                            >
+                                League
+                            </button>
+                            <button
+                                className={`btn ${tournamentType === 'knockout' ? 'btn-primary' : 'btn-ghost'}`}
+                                onClick={() => setTournamentType('knockout')}
+                            >
+                                Knockout
+                            </button>
+                        </div>
+
                     </div>
+
+                    {tournamentType === 'league' && (
+                        <div className="form-group">
+                            <label>Target Points (Optional)</label>
+                            <input
+                                type="number"
+                                className="form-input"
+                                value={maxPoints}
+                                onChange={e => setMaxPoints(e.target.value)}
+                                placeholder="Points needed to win"
+                            />
+                        </div>
+                    )}
 
                     <div className="form-group">
                         <label>Tournament Theme</label>

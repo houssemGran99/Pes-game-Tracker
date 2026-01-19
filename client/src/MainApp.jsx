@@ -18,6 +18,7 @@ import VoiceMatchInput from './components/VoiceMatchInput';
 import NewsSection from './components/NewsSection';
 import WhoPlaysNext from './components/WhoPlaysNext';
 import AchievementsPage from './components/AchievementsPage';
+import HeadToHead from './components/HeadToHead';
 
 function MainApp() {
   const { state } = useMatch();
@@ -69,6 +70,8 @@ function MainApp() {
         return <WhoPlaysNext />;
       case 'achievements':
         return <AchievementsPage />;
+      case 'headToHead':
+        return <HeadToHead />;
       default:
         return <HomeScreen />;
     }

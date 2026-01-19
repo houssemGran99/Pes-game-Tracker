@@ -73,9 +73,16 @@ export default function HomeScreen() {
                     <span className="nav-btn-icon">📊</span>
                     <div className="nav-btn-text">
                         <div className="nav-btn-title">Statistics</div>
-                        <div className="nav-btn-desc">Head to Head & Records</div>
+                        <div className="nav-btn-desc">Records & Insights</div>
                     </div>
+                </button>
 
+                <button className="nav-btn" onClick={() => actions.setScreen('headToHead')}>
+                    <span className="nav-btn-icon">🥊</span>
+                    <div className="nav-btn-text">
+                        <div className="nav-btn-title">Head to Head</div>
+                        <div className="nav-btn-desc">Compare two players</div>
+                    </div>
                 </button>
 
                 <button className="nav-btn" onClick={() => actions.setScreen('whoPlaysNext')}>
